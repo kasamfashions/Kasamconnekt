@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Retail Ops Task Manager</title>
+    <title>Kasam Connekt</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -188,14 +188,14 @@ const USERS = [
   { id: 'user-ops-1', name: 'Olivia Payne', role: Role.OPERATIONS_HEAD },
   { id: 'user-ops-2', name: 'Omar Hughes', role: Role.OPERATIONS_HEAD },
   // Cluster Managers
-  { id: 'user-cm-1', name: 'Charles Miller', role: Role.CLUSTER_MANAGER, cluster: 'North Cluster', email: 'charles.miller@retailops.com' },
-  { id: 'user-cm-2', name: 'Chloe Davis', role: Role.CLUSTER_MANAGER, cluster: 'South Cluster', email: 'chloe.davis@retailops.com' },
+  { id: 'user-cm-1', name: 'Charles Miller', role: Role.CLUSTER_MANAGER, cluster: 'North Cluster', email: 'charles.miller@KasamConnekt.com' },
+  { id: 'user-cm-2', name: 'Chloe Davis', role: Role.CLUSTER_MANAGER, cluster: 'South Cluster', email: 'chloe.davis@KasamConnekt.com' },
   // Department Specialists
-  { id: 'user-ds-1', name: 'John Smith', role: Role.DEPARTMENT_SPECIALIST, email: 'john.smith.it@retailops.com' }, // IT Specialist
-  { id: 'user-ds-2', name: 'Jane Doe', role: Role.DEPARTMENT_SPECIALIST, email: 'jane.doe.hr@retailops.com' }, // HR Specialist
-  { id: 'user-ds-3', name: 'Peter Jones', role: Role.DEPARTMENT_SPECIALIST, email: 'peter.jones.maint@retailops.com' }, // Maintenance Specialist
-  { id: 'user-ds-4', name: 'Mary Williams', role: Role.DEPARTMENT_SPECIALIST, email: 'mary.williams.acc@retailops.com' }, // Accounts Specialist 1
-  { id: 'user-ds-5', name: 'David Brown', role: Role.DEPARTMENT_SPECIALIST, email: 'david.brown.acc@retailops.com' }, // Accounts Specialist 2
+  { id: 'user-ds-1', name: 'John Smith', role: Role.DEPARTMENT_SPECIALIST, email: 'john.smith.it@KasamConnekt.com' }, // IT Specialist
+  { id: 'user-ds-2', name: 'Jane Doe', role: Role.DEPARTMENT_SPECIALIST, email: 'jane.doe.hr@KasamConnekt.com' }, // HR Specialist
+  { id: 'user-ds-3', name: 'Peter Jones', role: Role.DEPARTMENT_SPECIALIST, email: 'peter.jones.maint@KasamConnekt.com' }, // Maintenance Specialist
+  { id: 'user-ds-4', name: 'Mary Williams', role: Role.DEPARTMENT_SPECIALIST, email: 'mary.williams.acc@KasamConnekt.com' }, // Accounts Specialist 1
+  { id: 'user-ds-5', name: 'David Brown', role: Role.DEPARTMENT_SPECIALIST, email: 'david.brown.acc@KasamConnekt.com' }, // Accounts Specialist 2
   // Store Managers
   { id: 'user-sm-1', name: 'Sophie Morgan', role: Role.STORE_MANAGER, store: 'Downtown Central' },
   { id: 'user-sm-2', name: 'Samuel Myers', role: Role.STORE_MANAGER, store: 'Uptown Plaza' },
@@ -947,7 +947,7 @@ const Header = ({ activeView, setActiveView }) => {
         React.createElement('div', { className: "flex items-center space-x-4" },
           React.createElement('div', { className: "flex items-center text-primary-600 dark:text-primary-400" },
             React.createElement(BuildingStorefrontIcon, { className: "h-8 w-8" }),
-            React.createElement('span', { className: "ml-2 text-xl font-bold" }, "RetailOps")
+            React.createElement('span', { className: "ml-2 text-xl font-bold" }, "Kasam Connekt")
           ),
           currentUser.role === Role.ADMIN && React.createElement('nav', { className: "hidden md:flex items-center space-x-2" },
             React.createElement('button', { onClick: () => setActiveView('dashboard'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
@@ -989,9 +989,9 @@ const getInitialState = (key, defaultValue) => {
 };
 
 const App = () => {
-  const [users, setUsers] = React.useState(() => getInitialState('retailOps_users', USERS));
-  const [tickets, setTickets] = React.useState(() => getInitialState('retailOps_tickets', TICKETS));
-  const [categoryAssignments, setCategoryAssignments] = React.useState(() => getInitialState('retailOps_categoryAssignments', {
+  const [users, setUsers] = React.useState(() => getInitialState('KasamConnekt_users', USERS));
+  const [tickets, setTickets] = React.useState(() => getInitialState('KasamConnekt_tickets', TICKETS));
+  const [categoryAssignments, setCategoryAssignments] = React.useState(() => getInitialState('KasamConnekt_categoryAssignments', {
     [Category.IT]: ['user-ds-1'],
     [Category.HR]: ['user-ds-2'],
     [Category.MAINTENANCE]: ['user-ds-3'],
@@ -999,24 +999,24 @@ const App = () => {
   }));
 
   const [currentUser, setCurrentUser] = React.useState(() => {
-    const savedUsers = getInitialState('retailOps_users', USERS);
+    const savedUsers = getInitialState('KasamConnekt_users', USERS);
     return savedUsers[0] || null;
   });
 
-  const [theme, setTheme] = React.useState(() => getInitialState('retailOps_theme', 'light'));
+  const [theme, setTheme] = React.useState(() => getInitialState('KasamConnekt_theme', 'light'));
   const [activeView, setActiveView] = React.useState('dashboard');
   
   React.useEffect(() => {
-    localStorage.setItem('retailOps_users', JSON.stringify(users));
+    localStorage.setItem('KasamConnekt_users', JSON.stringify(users));
   }, [users]);
   React.useEffect(() => {
-    localStorage.setItem('retailOps_tickets', JSON.stringify(tickets));
+    localStorage.setItem('KasamConnekt_tickets', JSON.stringify(tickets));
   }, [tickets]);
   React.useEffect(() => {
-    localStorage.setItem('retailOps_categoryAssignments', JSON.stringify(categoryAssignments));
+    localStorage.setItem('KasamConnekt_categoryAssignments', JSON.stringify(categoryAssignments));
   }, [categoryAssignments]);
   React.useEffect(() => {
-    localStorage.setItem('retailOps_theme', theme);
+    localStorage.setItem('KasamConnekt_theme', theme);
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -1041,10 +1041,10 @@ const App = () => {
   
   const handleResetData = () => {
     if (window.confirm('Are you sure you want to reset all data to the original demo state? All your changes will be lost.')) {
-      localStorage.removeItem('retailOps_tickets');
-      localStorage.removeItem('retailOps_users');
-      localStorage.removeItem('retailOps_categoryAssignments');
-      localStorage.removeItem('retailOps_theme');
+      localStorage.removeItem('KasamConnekt_tickets');
+      localStorage.removeItem('KasamConnekt_users');
+      localStorage.removeItem('KasamConnekt_categoryAssignments');
+      localStorage.removeItem('KasamConnekt_theme');
       window.location.reload();
     }
   };
