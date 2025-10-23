@@ -297,7 +297,7 @@ const UserModal = ({ isOpen, onClose, userToEdit }) => {
             React.createElement('input', { type: "email", id: "email", value: email, onChange: e => setEmail(e.target.value), placeholder: "user@example.com", required: rolesWithEmail.includes(role), className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
           ),
           role === Role.STORE_MANAGER && React.createElement('div', null,
-            React.createElement('label', { htmlFor: "store", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Store Name"),
+            React.createElement('label', { htmlFor: "store", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Store location"),
             React.createElement('input', { type: "text", id: "store", value: store, onChange: e => setStore(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
           ),
           role === Role.CLUSTER_MANAGER && React.createElement('div', null,
@@ -1272,3 +1272,4 @@ if (rootElement) {
     </script>
   </body>
 </html>
+
