@@ -275,17 +275,31 @@ const UserModal = ({ isOpen, onClose, userToEdit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name) return;
-    const userData = {
+
+    const cleanUserData = {
       name,
       role,
-      email: rolesWithEmail.includes(role) ? email : undefined,
-      store: role === Role.STORE_MANAGER ? store : undefined,
-      cluster: role === Role.CLUSTER_MANAGER ? cluster : undefined,
+      email: null,
+      store: null,
+      cluster: null,
     };
+
+    if (rolesWithEmail.includes(role)) {
+      cleanUserData.email = email || null;
+    }
+    
+    if (role === Role.STORE_MANAGER) {
+      cleanUserData.store = store || null;
+    }
+    
+    if (role === Role.CLUSTER_MANAGER) {
+      cleanUserData.cluster = cluster || null;
+    }
+
     if (isEditing) {
-      updateUser(userToEdit.id, userData);
+      updateUser(userToEdit.id, cleanUserData);
     } else {
-      createUser(userData);
+      createUser(cleanUserData);
     }
     onClose();
   };
