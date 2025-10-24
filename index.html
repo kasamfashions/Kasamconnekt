@@ -784,7 +784,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
   const canManageAssignment = ((currentUser.role === Role.ADMIN || currentUser.role === Role.OPERATIONS_HEAD) || (currentUser.role === Role.CLUSTER_MANAGER && currentUser.id === ticket.assignedClusterManager?.id)) && ticket.status !== Status.CLOSED;
   const canStartProgress = currentUser.id === ticket.assignedTo?.id && ticket.status === Status.ASSIGNED;
   const canMarkAsComplete = currentUser.id === ticket.assignedTo?.id && ticket.status === Status.IN_PROGRESS;
-  const canRequestClosure = currentUser.id === ticket.raisedBy?.id && ticket.status === Status.COMPLETED;
+  const canRequestClosure = (currentUser.id === ticket.raisedBy?.id || currentUser.id === ticket.assignedTo?.id) && ticket.status === Status.COMPLETED;
   const canApproveRejectClosure = [Role.ADMIN, Role.OPERATIONS_HEAD].includes(currentUser.role) && ticket.status === Status.PENDING_CLOSURE;
   
   const renderDetailItem = (Icon, label, value) => React.createElement('div', null,
