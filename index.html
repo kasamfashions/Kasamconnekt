@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Retail Ops Task Manager</title>
+    <title>Kasam ConneKT</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -187,6 +188,11 @@ const TrashIcon = (props) => (
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.033C6.91 2.75 6 3.704 6 4.884v.916m7.5 0a48.667 48.667 0 00-7.5 0" })
   )
 );
+const KeyIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" })
+  )
+);
 const CheckCircleIcon = (props) => (
   React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" })
@@ -202,42 +208,48 @@ const PaperClipIcon = (props) => (
       React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3.375 3.375 0 1118.375 7.625l-10.94 10.94a1.125 1.125 0 11-1.591-1.591l10.94-10.94a3.375 3.375 0 014.773 4.773l-10.94 10.94a1.125 1.125 0 101.591 1.591l7.693-7.693a4.5 4.5 0 00-6.364-6.364l-7.693 7.693" })
     )
 );
+const ArrowLeftOnRectangleIcon = (props) => (
+    React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" })
+    )
+);
 
 
 // --- constants.ts ---
-const USERS = [
+const INITIAL_USERS = [
   // Admins
-  { id: 'user-admin-1', name: 'Admin User', role: Role.ADMIN },
+  { id: 'user-admin-1', name: 'Admin User', role: Role.ADMIN, email: 'admin@retailops.com', password: 'password123', passwordChanged: false },
   // Operations Heads
-  { id: 'user-ops-1', name: 'Olivia Payne', role: Role.OPERATIONS_HEAD },
-  { id: 'user-ops-2', name: 'Omar Hughes', role: Role.OPERATIONS_HEAD },
+  { id: 'user-ops-1', name: 'Olivia Payne', role: Role.OPERATIONS_HEAD, email: 'olivia.payne@retailops.com', password: 'password' },
+  { id: 'user-ops-2', name: 'Omar Hughes', role: Role.OPERATIONS_HEAD, email: 'omar.hughes@retailops.com', password: 'password' },
   // Cluster Managers
-  { id: 'user-cm-1', name: 'Charles Miller', role: Role.CLUSTER_MANAGER, cluster: 'North Cluster', email: 'charles.miller@retailops.com' },
-  { id: 'user-cm-2', name: 'Chloe Davis', role: Role.CLUSTER_MANAGER, cluster: 'South Cluster', email: 'chloe.davis@retailops.com' },
+  { id: 'user-cm-1', name: 'Charles Miller', role: Role.CLUSTER_MANAGER, cluster: 'North Cluster', email: 'charles.miller@retailops.com', password: 'password' },
+  { id: 'user-cm-2', name: 'Chloe Davis', role: Role.CLUSTER_MANAGER, cluster: 'South Cluster', email: 'chloe.davis@retailops.com', password: 'password' },
   // Department Specialists
-  { id: 'user-ds-1', name: 'John Smith', role: Role.DEPARTMENT_SPECIALIST, email: 'john.smith.it@retailops.com' }, // IT Specialist
-  { id: 'user-ds-2', name: 'Jane Doe', role: Role.DEPARTMENT_SPECIALIST, email: 'jane.doe.hr@retailops.com' }, // HR Specialist
-  { id: 'user-ds-3', name: 'Peter Jones', role: Role.DEPARTMENT_SPECIALIST, email: 'peter.jones.maint@retailops.com' }, // Maintenance Specialist
-  { id: 'user-ds-4', name: 'Mary Williams', role: Role.DEPARTMENT_SPECIALIST, email: 'mary.williams.acc@retailops.com' }, // Accounts Specialist 1
-  { id: 'user-ds-5', name: 'David Brown', role: Role.DEPARTMENT_SPECIALIST, email: 'david.brown.acc@retailops.com' }, // Accounts Specialist 2
+  { id: 'user-ds-1', name: 'John Smith', role: Role.DEPARTMENT_SPECIALIST, email: 'john.smith.it@retailops.com', password: 'password' },
+  { id: 'user-ds-2', name: 'Jane Doe', role: Role.DEPARTMENT_SPECIALIST, email: 'jane.doe.hr@retailops.com', password: 'password' },
+  { id: 'user-ds-3', name: 'Peter Jones', role: Role.DEPARTMENT_SPECIALIST, email: 'peter.jones.maint@retailops.com', password: 'password' },
+  { id: 'user-ds-4', name: 'Mary Williams', role: Role.DEPARTMENT_SPECIALIST, email: 'mary.williams.acc@retailops.com', password: 'password' },
+  { id: 'user-ds-5', name: 'David Brown', role: Role.DEPARTMENT_SPECIALIST, email: 'david.brown.acc@retailops.com', password: 'password' },
   // Store Managers
-  { id: 'user-sm-1', name: 'Sophie Morgan', role: Role.STORE_MANAGER, store: 'Downtown Central' },
-  { id: 'user-sm-2', name: 'Samuel Myers', role: Role.STORE_MANAGER, store: 'Uptown Plaza' },
-  { id: 'user-sm-3', name: 'Scarlett Mitchell', role: Role.STORE_MANAGER, store: 'Westside Mall' },
-  { id: 'user-sm-4', name: 'Sebastian Martin', role: Role.STORE_MANAGER, store: 'Eastside Market' },
+  { id: 'user-sm-1', name: 'Sophie Morgan', role: Role.STORE_MANAGER, store: 'Downtown Central', email: 'sophie.morgan@retailops.com', password: 'password' },
+  { id: 'user-sm-2', name: 'Samuel Myers', role: Role.STORE_MANAGER, store: 'Uptown Plaza', email: 'samuel.myers@retailops.com', password: 'password' },
+  { id: 'user-sm-3', name: 'Scarlett Mitchell', role: Role.STORE_MANAGER, store: 'Westside Mall', email: 'scarlett.mitchell@retailops.com', password: 'password' },
+  { id: 'user-sm-4', name: 'Sebastian Martin', role: Role.STORE_MANAGER, store: 'Eastside Market', email: 'sebastian.martin@retailops.com', password: 'password' },
 ];
-const [admin1] = USERS.filter(u => u.role === Role.ADMIN);
-const [ops1] = USERS.filter(u => u.role === Role.OPERATIONS_HEAD);
-const [cm1, cm2] = USERS.filter(u => u.role === Role.CLUSTER_MANAGER);
-const [ds1, ds2, ds3] = USERS.filter(u => u.role === Role.DEPARTMENT_SPECIALIST);
-const [sm1, sm2, sm3, sm4] = USERS.filter(u => u.role === Role.STORE_MANAGER);
-const TICKETS = [
-  { id: 'TICKET-001', title: 'Leaking AC unit in main aisle', description: 'The main air conditioning unit in aisle 5 has been leaking water for the past two hours. It is creating a slipping hazard for customers. We have placed a bucket under it for now but it needs urgent repair.', status: Status.ASSIGNED, category: Category.MAINTENANCE, priority: 'High', raisedBy: sm1, store: 'Downtown Central', assignedTo: ds3, assignedClusterManager: cm1, createdAt: '2023-10-26T09:00:00Z', updatedAt: '2023-10-26T09:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-26T09:00:00Z', updatedBy: sm1 }, { status: Status.ASSIGNED, timestamp: '2023-10-26T09:00:01Z', updatedBy: ds3 }, ], fileAttachments: [] },
-  { id: 'TICKET-002', title: 'POS Terminal 2 is not processing credit cards', description: 'The credit card reader on POS Terminal 2 is declining all cards. Swiping, inserting chip, and tapping all fail. The terminal has been restarted but the issue persists. We are directing all customers to other terminals.', status: Status.IN_PROGRESS, category: Category.IT, priority: 'High', raisedBy: sm2, store: 'Uptown Plaza', assignedTo: ds1, assignedClusterManager: cm1, createdAt: '2023-10-26T10:30:00Z', updatedAt: '2023-10-26T11:00:00Z', comments: [ { id: 'C-001', user: ds1, text: 'I am looking into the issue remotely. Might need to dispatch a tech.', timestamp: '2023-10-26T11:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-26T10:30:00Z', updatedBy: sm2 }, { status: Status.ASSIGNED, timestamp: '2023-10-26T10:30:01Z', updatedBy: ds1 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-26T11:00:00Z', updatedBy: ds1 }, ], fileAttachments: [] },
-  { id: 'TICKET-003', title: 'Request for new cashier training', description: 'We have two new hires starting next week who will be working as cashiers. They need to be scheduled for the standard POS and customer service training.', status: Status.PENDING_CLOSURE, category: Category.HR, priority: 'Medium', raisedBy: sm3, store: 'Westside Mall', assignedTo: ds2, assignedClusterManager: cm2, closureRequestedBy: sm3, createdAt: '2023-10-25T14:00:00Z', updatedAt: '2023-10-26T08:30:00Z', comments: [ { id: 'C-003', user: ds2, text: 'Training scheduled for Tuesday. All materials sent.', timestamp: '2023-10-26T08:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-25T14:00:00Z', updatedBy: sm3 }, { status: Status.ASSIGNED, timestamp: '2023-10-25T14:00:01Z', updatedBy: ds2 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-25T15:00:00Z', updatedBy: ds2 }, { status: Status.COMPLETED, timestamp: '2023-10-26T08:00:00Z', updatedBy: ds2 }, { status: Status.PENDING_CLOSURE, timestamp: '2023-10-26T08:30:00Z', updatedBy: sm3 } ], fileAttachments: [] },
-  { id: 'TICKET-004', title: 'Invoice #5678 discrepancy', description: 'We received invoice #5678 from our vendor, but the amount is higher than quoted. Please investigate.', status: Status.RAISED, category: Category.ACCOUNTS, priority: 'Medium', raisedBy: sm4, store: 'Eastside Market', assignedTo: null, assignedClusterManager: cm2, createdAt: '2023-10-24T11:00:00Z', updatedAt: '2023-10-25T16:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-24T11:00:00Z', updatedBy: sm4 }, ], fileAttachments: [] },
-  { id: 'TICKET-005', title: 'Broken shelf in the beverage aisle', description: 'A customer accidentally knocked over a display, and one of the shelves in the beverage aisle is now broken and unsafe. The area has been cordoned off.', status: Status.CLOSED, category: Category.MAINTENANCE, priority: 'High', raisedBy: sm1, store: 'Downtown Central', assignedTo: ds3, assignedClusterManager: cm1, createdAt: '2023-10-23T18:00:00Z', updatedAt: '2023-10-24T14:00:00Z', comments: [ { id: 'C-004', user: ds3, text: 'Maintenance team fixed the shelf and the area is clear now.', timestamp: '2023-10-24T13:30:00Z'}, { id: 'C-005', user: ops1, text: 'Reviewed and closed.', timestamp: '2023-10-24T14:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-23T18:00:00Z', updatedBy: sm1 }, { status: Status.ASSIGNED, timestamp: '2023-10-23T18:00:01Z', updatedBy: ds3 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-24T10:00:00Z', updatedBy: ds3 }, { status: Status.COMPLETED, timestamp: '2023-10-24T13:30:00Z', updatedBy: ds3 }, { status: Status.CLOSED, timestamp: '2023-10-24T14:00:00Z', updatedBy: ops1 } ], fileAttachments: [] },
+
+const INITIAL_TICKETS = [
+  { id: 'TICKET-001', title: 'Leaking AC unit in main aisle', description: 'The main air conditioning unit in aisle 5 has been leaking water for the past two hours...', status: Status.ASSIGNED, category: Category.MAINTENANCE, priority: 'High', raisedBy: 'user-sm-1', store: 'Downtown Central', assignedTo: 'user-ds-3', assignedClusterManager: 'user-cm-1', createdAt: '2023-10-26T09:00:00Z', updatedAt: '2023-10-26T09:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-26T09:00:00Z', updatedBy: 'user-sm-1' }, { status: Status.ASSIGNED, timestamp: '2023-10-26T09:00:01Z', updatedBy: 'user-ds-3' } ], fileAttachments: [] },
+  { id: 'TICKET-002', title: 'POS Terminal 2 not processing cards', description: 'Credit card reader on POS 2 is declining all cards...', status: Status.IN_PROGRESS, category: Category.IT, priority: 'High', raisedBy: 'user-sm-2', store: 'Uptown Plaza', assignedTo: 'user-ds-1', assignedClusterManager: 'user-cm-1', createdAt: '2023-10-26T10:30:00Z', updatedAt: '2023-10-26T11:00:00Z', comments: [ { id: 'C-001', user: 'user-ds-1', text: 'Looking into this remotely.', timestamp: '2023-10-26T11:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-26T10:30:00Z', updatedBy: 'user-sm-2' }, { status: Status.ASSIGNED, timestamp: '2023-10-26T10:30:01Z', updatedBy: 'user-ds-1' }, { status: Status.IN_PROGRESS, timestamp: '2023-10-26T11:00:00Z', updatedBy: 'user-ds-1' } ], fileAttachments: [] },
+  { id: 'TICKET-003', title: 'Request new cashier training', description: 'Two new hires need POS and customer service training.', status: Status.PENDING_CLOSURE, category: Category.HR, priority: 'Medium', raisedBy: 'user-sm-3', store: 'Westside Mall', assignedTo: 'user-ds-2', assignedClusterManager: 'user-cm-2', closureRequestedBy: 'user-sm-3', createdAt: '2023-10-25T14:00:00Z', updatedAt: '2023-10-26T08:30:00Z', comments: [ { id: 'C-003', user: 'user-ds-2', text: 'Training scheduled.', timestamp: '2023-10-26T08:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-25T14:00:00Z', updatedBy: 'user-sm-3' }, { status: Status.ASSIGNED, timestamp: '2023-10-25T14:00:01Z', updatedBy: 'user-ds-2' }, { status: Status.IN_PROGRESS, timestamp: '2023-10-25T15:00:00Z', updatedBy: 'user-ds-2' }, { status: Status.COMPLETED, timestamp: '2023-10-26T08:00:00Z', updatedBy: 'user-ds-2' }, { status: Status.PENDING_CLOSURE, timestamp: '2023-10-26T08:30:00Z', updatedBy: 'user-sm-3' } ], fileAttachments: [] },
 ];
+
+const INITIAL_CATEGORY_ASSIGNMENTS = {
+    [Category.IT]: ['user-ds-1'],
+    [Category.HR]: ['user-ds-2'],
+    [Category.MAINTENANCE]: ['user-ds-3'],
+    [Category.ACCOUNTS]: ['user-ds-4', 'user-ds-5'],
+};
 
 // --- contexts/AppContext.ts ---
 const AppContext = React.createContext(null);
@@ -250,66 +262,64 @@ const UserModal = ({ isOpen, onClose, userToEdit }) => {
   const [email, setEmail] = React.useState('');
   const [store, setStore] = React.useState('');
   const [cluster, setCluster] = React.useState('');
+  const [password, setPassword] = React.useState('');
   const isEditing = !!userToEdit;
 
   React.useEffect(() => {
-    if (isEditing) {
-      setName(userToEdit.name);
-      setRole(userToEdit.role);
-      setEmail(userToEdit.email || '');
-      setStore(userToEdit.store || '');
-      setCluster(userToEdit.cluster || '');
-    } else {
-      setName('');
-      setRole(Role.STORE_MANAGER);
-      setEmail('');
-      setStore('');
-      setCluster('');
+    if (isOpen) {
+        if (isEditing) {
+          setName(userToEdit.name);
+          setRole(userToEdit.role);
+          setEmail(userToEdit.email || '');
+          setStore(userToEdit.store || '');
+          setCluster(userToEdit.cluster || '');
+          setPassword(''); // Clear password field on edit
+        } else {
+          setName('');
+          setRole(Role.STORE_MANAGER);
+          setEmail('');
+          setStore('');
+          setCluster('');
+          setPassword('');
+        }
     }
   }, [userToEdit, isEditing, isOpen]);
 
   if (!context || !isOpen) return null;
-  const { createUser, updateUser } = context;
-  const rolesWithEmail = [Role.CLUSTER_MANAGER, Role.DEPARTMENT_SPECIALIST];
+  const { createUser, updateUser, changePassword } = context;
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!name) return;
+    if (!name || !email) return;
+    if (!isEditing && !password) {
+        alert("Please set an initial password for the new user.");
+        return;
+    }
 
-    const cleanUserData = {
+    const userData = {
       name,
       role,
-      email: null,
-      store: null,
-      cluster: null,
+      email,
+      store: role === Role.STORE_MANAGER ? store : null,
+      cluster: role === Role.CLUSTER_MANAGER ? cluster : null,
     };
 
-    if (rolesWithEmail.includes(role)) {
-      cleanUserData.email = email || null;
-    }
-    
-    if (role === Role.STORE_MANAGER) {
-      cleanUserData.store = store || null;
-    }
-    
-    if (role === Role.CLUSTER_MANAGER) {
-      cleanUserData.cluster = cluster || null;
-    }
-
     if (isEditing) {
-      updateUser(userToEdit.id, cleanUserData);
+      updateUser(userToEdit.id, userData);
+      if (password) {
+          changePassword(userToEdit.id, password);
+      }
     } else {
-      createUser(cleanUserData);
+      createUser(userData, password);
     }
     onClose();
   };
-
+  
   const handleRoleChange = (e) => {
     const newRole = e.target.value;
     setRole(newRole);
     if (newRole !== Role.STORE_MANAGER) setStore('');
     if (newRole !== Role.CLUSTER_MANAGER) setCluster('');
-    if (!rolesWithEmail.includes(newRole)) setEmail('');
   };
 
   return React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
@@ -324,15 +334,19 @@ const UserModal = ({ isOpen, onClose, userToEdit }) => {
             React.createElement('label', { htmlFor: "name", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Full Name"),
             React.createElement('input', { type: "text", id: "name", value: name, onChange: e => setName(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
           ),
+           React.createElement('div', null,
+            React.createElement('label', { htmlFor: "email", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Email Address"),
+            React.createElement('input', { type: "email", id: "email", value: email, onChange: e => setEmail(e.target.value), placeholder: "user@example.com", required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
+          ),
+          React.createElement('div', null,
+            React.createElement('label', { htmlFor: "password", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, isEditing ? "New Password (optional)" : "Password"),
+            React.createElement('input', { type: "password", id: "password", value: password, onChange: e => setPassword(e.target.value), required: !isEditing, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
+          ),
           React.createElement('div', null,
             React.createElement('label', { htmlFor: "role", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Role"),
             React.createElement('select', { id: "role", value: role, onChange: handleRoleChange, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" },
               Object.values(Role).map(r => React.createElement('option', { key: r, value: r }, r))
             )
-          ),
-          rolesWithEmail.includes(role) && React.createElement('div', null,
-            React.createElement('label', { htmlFor: "email", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Email Address"),
-            React.createElement('input', { type: "email", id: "email", value: email, onChange: e => setEmail(e.target.value), placeholder: "user@example.com", required: rolesWithEmail.includes(role), className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
           ),
           role === Role.STORE_MANAGER && React.createElement('div', null,
             React.createElement('label', { htmlFor: "store", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Store Name"),
@@ -379,6 +393,7 @@ const UserManagement = () => {
       deleteUser(userId);
     }
   };
+
   return React.createElement(React.Fragment, null,
     React.createElement('div', { className: "space-y-8" },
       React.createElement('div', null,
@@ -406,13 +421,13 @@ const UserManagement = () => {
                 users.length > 0 ? users.map(user => React.createElement('tr', { key: user.id },
                   React.createElement('td', { className: "px-6 py-4 whitespace-nowrap" },
                     React.createElement('div', { className: "text-sm font-medium text-gray-900 dark:text-white" }, user.name),
-                    React.createElement('div', { className: "text-sm text-gray-500 dark:text-gray-400" }, user.email || user.id)
+                    React.createElement('div', { className: "text-sm text-gray-500 dark:text-gray-400" }, user.email)
                   ),
                   React.createElement('td', { className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" }, user.role),
                   React.createElement('td', { className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" }, user.store || user.cluster || 'N/A'),
                   React.createElement('td', { className: "px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2" },
-                    React.createElement('button', { onClick: () => handleOpenModal(user), className: "text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-200 p-1" }, React.createElement(PencilIcon, { className: "h-5 w-5" })),
-                    React.createElement('button', { onClick: () => handleDeleteUser(user.id), className: "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200 p-1" }, React.createElement(TrashIcon, { className: "h-5 w-5" }))
+                    React.createElement('button', { onClick: () => handleOpenModal(user), className: "text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-200 p-1", title: "Edit User / Change Password" }, React.createElement(PencilIcon, { className: "h-5 w-5" })),
+                    React.createElement('button', { onClick: () => handleDeleteUser(user.id), className: "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200 p-1", title: "Delete User" }, React.createElement(TrashIcon, { className: "h-5 w-5" }))
                   )
                 )) : React.createElement('tr', null,
                   React.createElement('td', { colSpan: 4, className: "text-center py-12" },
@@ -442,7 +457,7 @@ const UserManagement = () => {
                 departmentSpecialists.map(specialist => React.createElement('label', { key: specialist.id, className: "flex items-center space-x-3" },
                   React.createElement('input', {
                     type: "checkbox",
-                    checked: categoryAssignments?.assignments?.[category]?.includes(specialist.id) || false,
+                    checked: categoryAssignments[category]?.includes(specialist.id) || false,
                     onChange: (e) => updateCategoryAssignment(category, specialist.id, e.target.checked),
                     className: "h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   }),
@@ -584,14 +599,14 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
   }, [clusterManagers]);
 
   React.useEffect(() => {
-    if (isOpen) {
-        resetState();
+    if (isOpen && clusterManagers.length > 0 && !clusterManagerId) {
+        setClusterManagerId(clusterManagers[0].id);
     }
-  }, [isOpen, resetState]);
+  }, [isOpen, clusterManagers, clusterManagerId]);
 
 
   if (!context || !isOpen) return null;
-  const { currentUser, createTicket, users } = context;
+  const { currentUser, createTicket } = context;
 
   const handleFileChange = (e) => {
     if (e.target.files) {
@@ -681,7 +696,8 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
           React.createElement('div', null,
             React.createElement('label', { htmlFor: "clusterManager", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Choose your Cluster Manager"),
             React.createElement('select', { id: "clusterManager", value: clusterManagerId, onChange: e => setClusterManagerId(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" },
-              clusterManagers.length === 0 ? React.createElement('option', { disabled: true, value: "" }, "No Cluster Managers available") : clusterManagers.map(cm => React.createElement('option', { key: cm.id, value: cm.id }, `${cm.name} (${cm.cluster})`))
+              React.createElement('option', { disabled: true, value: "" }, "Select a manager..."),
+              clusterManagers.map(cm => React.createElement('option', { key: cm.id, value: cm.id }, `${cm.name} (${cm.cluster})`))
             )
           ),
           React.createElement('div', null,
@@ -742,7 +758,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
 
   const departmentSpecialistsForCategory = React.useMemo(() => {
     if (!context) return [];
-    const specialistIds = context.categoryAssignments?.assignments?.[ticket.category] || [];
+    const specialistIds = context.categoryAssignments?.[ticket.category] || [];
     return context.users.filter(u => u.role === Role.DEPARTMENT_SPECIALIST && specialistIds.includes(u.id));
   }, [context, ticket.category]);
   
@@ -777,7 +793,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
   };
   const isCurrentUserSpecialistForCategory = React.useMemo(() => {
     if (currentUser.role !== Role.DEPARTMENT_SPECIALIST) return false;
-    return context.categoryAssignments?.assignments?.[ticket.category]?.includes(currentUser.id) ?? false;
+    return context.categoryAssignments?.[ticket.category]?.includes(currentUser.id) ?? false;
   }, [currentUser, ticket.category, context.categoryAssignments]);
 
   const canAssignToSelf = currentUser.role === Role.DEPARTMENT_SPECIALIST && !ticket.assignedTo && isCurrentUserSpecialistForCategory;
@@ -1053,19 +1069,31 @@ const Dashboard = () => {
 };
 
 // --- components/Header.tsx ---
-const Header = ({ activeView, setActiveView }) => {
+const Header = () => {
   const context = React.useContext(AppContext);
   if (!context) return null;
-  const { currentUser, changeUser, theme, toggleTheme, users, handleResetData } = context;
+  const { currentUser, theme, toggleTheme, users, handleResetData, setActiveView, activeView, openLoginModal, logout } = context;
+
+  const handleUserSelect = (e) => {
+    const userId = e.target.value;
+    if (userId) {
+        const userToLogin = users.find(u => u.id === userId);
+        if (userToLogin) {
+            openLoginModal(userToLogin);
+        }
+    }
+    e.target.value = ''; // Reset dropdown after selection
+  };
+
   return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50" },
     React.createElement('div', { className: "container mx-auto px-4 sm:px-6 lg:px-8" },
       React.createElement('div', { className: "flex items-center justify-between h-16" },
         React.createElement('div', { className: "flex items-center space-x-4" },
           React.createElement('div', { className: "flex items-center text-primary-600 dark:text-primary-400" },
             React.createElement(BuildingStorefrontIcon, { className: "h-8 w-8" }),
-            React.createElement('span', { className: "ml-2 text-xl font-bold" }, "RetailOps")
+            React.createElement('span', { className: "ml-2 text-xl font-bold" }, "Kasam ConneKT")
           ),
-          currentUser.role === Role.ADMIN && React.createElement('nav', { className: "hidden md:flex items-center space-x-2" },
+          currentUser && currentUser.role === Role.ADMIN && React.createElement('nav', { className: "hidden md:flex items-center space-x-2" },
             React.createElement('button', { onClick: () => setActiveView('dashboard'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
               React.createElement(TicketIcon, { className: "h-5 w-5 mr-2" }), "Dashboard"),
             React.createElement('button', { onClick: () => setActiveView('analytics'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'analytics' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
@@ -1075,16 +1103,25 @@ const Header = ({ activeView, setActiveView }) => {
           )
         ),
         React.createElement('div', { className: "flex items-center space-x-2" },
-          React.createElement('div', { className: "relative" },
-            React.createElement(UserCircleIcon, { className: "absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" }),
-            React.createElement('select', { value: currentUser.id, onChange: (e) => changeUser(e.target.value), className: "pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-primary-500 focus:border-primary-500" },
-              users.map(user => React.createElement('option', { key: user.id, value: user.id }, `${user.name} (${user.role})`))
+          currentUser ? (
+            React.createElement('div', { className: "flex items-center space-x-4" },
+                React.createElement('span', { className: "text-sm font-medium text-gray-700 dark:text-gray-200" }, `Welcome, ${currentUser.name}`),
+                React.createElement('button', { onClick: logout, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Logout" }, 
+                    React.createElement(ArrowLeftOnRectangleIcon, { className: "h-6 w-6" }))
             )
+          ) : (
+             React.createElement('div', { className: "relative" },
+                React.createElement(UserCircleIcon, { className: "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" }),
+                React.createElement('select', { onChange: handleUserSelect, defaultValue: "", className: "pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-primary-500 focus:border-primary-500" },
+                    React.createElement('option', { value: "", disabled: true }, "CHOOSE THE USER"),
+                    users.map(user => React.createElement('option', { key: user.id, value: user.id }, `${user.name} (${user.role})`))
+                )
+             )
           ),
-          React.createElement('button', { onClick: handleResetData, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500", "aria-label": "Reset Data" },
+          React.createElement('button', { onClick: handleResetData, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Reset All Data" },
             React.createElement(ArrowPathIcon, { className: "h-6 w-6" })
           ),
-          React.createElement('button', { onClick: toggleTheme, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500", "aria-label": "Toggle theme" },
+          React.createElement('button', { onClick: toggleTheme, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Toggle Theme" },
             theme === 'light' ? React.createElement(MoonIcon, { className: "h-6 w-6" }) : React.createElement(SunIcon, { className: "h-6 w-6" })
           )
         )
@@ -1093,98 +1130,184 @@ const Header = ({ activeView, setActiveView }) => {
   );
 };
 
+
+// --- components/LoginModal.tsx ---
+const LoginModal = ({ isOpen, onClose, user, onLogin }) => {
+    const [email, setEmail] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [error, setError] = React.useState('');
+    const [isLoggingIn, setIsLoggingIn] = React.useState(false);
+    const isAdminLogin = user?.role === Role.ADMIN;
+
+    React.useEffect(() => {
+        if (isOpen && user) {
+            setError('');
+            setEmail(user.email || '');
+            setPassword('');
+            setIsLoggingIn(false);
+        }
+    }, [isOpen, user]);
+
+    if (!isOpen || !user) return null;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setError('');
+        setIsLoggingIn(true);
+        const success = onLogin(user, isAdminLogin ? email : user.email, password);
+        if (success) {
+            onClose();
+        } else {
+            setError("Invalid credentials. Please try again.");
+            setIsLoggingIn(false);
+        }
+    };
+    
+    return React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm", onClick: e => e.stopPropagation() },
+        React.createElement('header', { className: "flex flex-col items-center justify-center p-6 border-b border-gray-200 dark:border-gray-700 text-center" },
+          React.createElement(UserCircleIcon, { className: "h-16 w-16 text-gray-400" }),
+          React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white mt-4" }, user.name),
+          React.createElement('p', { className: "text-sm text-gray-500 dark:text-gray-400" }, user.role)
+        ),
+        React.createElement('form', { onSubmit: handleSubmit },
+          React.createElement('main', { className: "p-6 space-y-4" },
+            isAdminLogin && React.createElement('div', null,
+              React.createElement('label', { htmlFor: "email", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Email"),
+              React.createElement('input', { type: "email", id: "email", value: email, onChange: e => setEmail(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
+            ),
+            React.createElement('div', null,
+              React.createElement('label', { htmlFor: "password", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Password"),
+              React.createElement('input', { type: "password", id: "password", value: password, onChange: e => setPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
+            ),
+            error && React.createElement('p', { className: "mt-2 text-xs text-red-600 dark:text-red-400" }, error)
+          ),
+          React.createElement('footer', { className: "px-6 pb-6" },
+             React.createElement('button', { type: "submit", disabled: isLoggingIn, className: "w-full rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:bg-primary-400" }, isLoggingIn ? 'Logging in...' : 'Login')
+          )
+        )
+      )
+    );
+};
+
+// --- components/ChangePasswordModal.tsx ---
+const ChangePasswordModal = ({ isOpen, onPasswordChange }) => {
+    const [newPassword, setNewPassword] = React.useState('');
+    const [confirmPassword, setConfirmPassword] = React.useState('');
+    const [error, setError] = React.useState('');
+    const [isChanging, setIsChanging] = React.useState(false);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (newPassword.length < 6) {
+            setError("Password must be at least 6 characters long.");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+        setError('');
+        setIsChanging(true);
+        onPasswordChange(newPassword);
+    };
+    
+    return React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4" },
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm" },
+        React.createElement('header', { className: "p-4 border-b border-gray-200 dark:border-gray-700" },
+          React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, "Set New Admin Password")
+        ),
+         React.createElement('p', { className: "p-6 text-sm text-gray-600 dark:text-gray-300" }, "For security, you must set a new password for the Admin account before you can proceed. Your temporary password has been disabled."),
+        React.createElement('form', { onSubmit: handleSubmit },
+          React.createElement('main', { className: "px-6 pb-6 space-y-4" },
+             React.createElement('div', null,
+              React.createElement('label', { htmlFor: "new-password", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "New Password"),
+              React.createElement('input', { type: "password", id: "new-password", value: newPassword, onChange: e => setNewPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm" })
+            ),
+             React.createElement('div', null,
+              React.createElement('label', { htmlFor: "confirm-password", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Confirm New Password"),
+              React.createElement('input', { type: "password", id: "confirm-password", value: confirmPassword, onChange: e => setConfirmPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm" })
+            ),
+            error && React.createElement('p', { className: "text-xs text-red-600 dark:text-red-400" }, error)
+          ),
+          React.createElement('footer', { className: "px-6 pb-6" },
+             React.createElement('button', { type: "submit", disabled: isChanging, className: "w-full rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:bg-primary-400" }, isChanging ? 'Saving...' : 'Set New Password')
+          )
+        )
+      )
+    );
+};
+
 // --- App.tsx ---
-const getInitialTheme = () => {
+const getInitialState = (key, defaultValue) => {
     try {
-      const savedItem = localStorage.getItem('retailOps_theme');
-      return savedItem ? JSON.parse(savedItem) : 'light';
+        const savedItem = localStorage.getItem(key);
+        if (savedItem) return JSON.parse(savedItem);
     } catch (error) {
-      return 'light';
+        console.error(`Error reading from localStorage key “${key}”:`, error);
     }
+    return defaultValue;
 };
 
 const App = () => {
   const [users, setUsers] = React.useState([]);
-  const [rawTickets, setRawTickets] = React.useState([]);
-  const [categoryAssignments, setCategoryAssignments] = React.useState(null);
-  const [currentUser, setCurrentUser] = React.useState(null);
+  const [tickets, setTickets] = React.useState([]);
+  const [categoryAssignments, setCategoryAssignments] = React.useState({});
+  
+  const [currentUser, setCurrentUser] = React.useState(() => getInitialState('kasam_currentUser', null));
+  const [theme, setTheme] = React.useState(() => getInitialState('kasam_theme', 'light'));
+  
+  const [activeView, setActiveView] = React.useState('dashboard');
+  const [isLoginModalOpen, setLoginModalOpen] = React.useState(false);
+  const [userToLogin, setUserToLogin] = React.useState(null);
+  const [isFirstAdminLogin, setFirstAdminLogin] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
 
-  const [theme, setTheme] = React.useState(getInitialTheme);
-  const [activeView, setActiveView] = React.useState('dashboard');
-  
+  // --- Data Seeding and Real-time Sync ---
   React.useEffect(() => {
-    localStorage.setItem('retailOps_theme', theme);
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [theme]);
+    const seedDatabase = async () => {
+        const configRef = db.collection('meta').doc('config');
+        const configDoc = await configRef.get();
 
-  React.useEffect(() => {
-    // Seed data if database is empty
-    const seedData = async () => {
-        const usersRef = db.collection('users');
-        const snapshot = await usersRef.get();
-        if (snapshot.empty) {
-            console.log("Database is empty. Seeding initial data...");
-            const batch = db.batch();
-
-            // Seed users
-            USERS.forEach(user => {
-                const docRef = db.collection('users').doc(user.id);
-                batch.set(docRef, user);
-            });
-            
-            // Seed tickets (converting user objects to IDs)
-            const transformUserFields = (userObject) => userObject ? userObject.id : null;
-
-            TICKETS.forEach(ticket => {
-                const docRef = db.collection('tickets').doc(ticket.id);
-                const transformedTicket = {
-                    ...ticket,
-                    raisedBy: transformUserFields(ticket.raisedBy),
-                    assignedTo: transformUserFields(ticket.assignedTo),
-                    assignedClusterManager: transformUserFields(ticket.assignedClusterManager),
-                    closureRequestedBy: transformUserFields(ticket.closureRequestedBy),
-                    history: ticket.history.map(h => ({...h, updatedBy: transformUserFields(h.updatedBy)})),
-                    comments: ticket.comments.map(c => ({...c, user: transformUserFields(c.user)})),
-                };
-                batch.set(docRef, transformedTicket);
-            });
-            
-            // Seed category assignments
-            const assignmentsRef = db.collection('categoryAssignments').doc('assignments');
-            batch.set(assignmentsRef, { assignments: {
-                [Category.IT]: ['user-ds-1'],
-                [Category.HR]: ['user-ds-2'],
-                [Category.MAINTENANCE]: ['user-ds-3'],
-                [Category.ACCOUNTS]: ['user-ds-4', 'user-ds-5'],
-            }});
-
-            await batch.commit();
-            console.log("Seeding complete.");
+        if (configDoc.exists && configDoc.data().seeded) {
+            return;
         }
+        
+        console.log("Database is empty. Seeding initial data...");
+        const batch = db.batch();
+
+        INITIAL_USERS.forEach(user => {
+            const userRef = db.collection('users').doc(user.id);
+            batch.set(userRef, user);
+        });
+
+        INITIAL_TICKETS.forEach(ticket => {
+            const ticketRef = db.collection('tickets').doc(ticket.id);
+            batch.set(ticketRef, ticket);
+        });
+        
+        const assignmentsRef = db.collection('meta').doc('categoryAssignments');
+        batch.set(assignmentsRef, INITIAL_CATEGORY_ASSIGNMENTS);
+
+        batch.set(configRef, { seeded: true, version: 1 });
+        
+        await batch.commit();
+        console.log("Initial data seeded successfully.");
     };
 
-    seedData().then(() => {
+    const setupListeners = () => {
         const unsubUsers = db.collection('users').onSnapshot(snapshot => {
             const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setUsers(usersData);
-            if (!currentUser) {
-              setCurrentUser(usersData[0] || null);
-            }
-            setIsLoading(false);
         });
-
-        const unsubTickets = db.collection('tickets').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+        const unsubTickets = db.collection('tickets').onSnapshot(snapshot => {
             const ticketsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setRawTickets(ticketsData);
+            setTickets(ticketsData);
         });
-
-        const unsubAssignments = db.collection('categoryAssignments').doc('assignments').onSnapshot(doc => {
-            setCategoryAssignments(doc.data());
+        const unsubAssignments = db.collection('meta').doc('categoryAssignments').onSnapshot(doc => {
+            setCategoryAssignments(doc.data() || {});
         });
 
         return () => {
@@ -1192,94 +1315,128 @@ const App = () => {
             unsubTickets();
             unsubAssignments();
         };
-    });
+    };
+
+    seedDatabase().then(() => {
+        const unsubscribe = setupListeners();
+        setIsLoading(false);
+        return unsubscribe;
+    }).catch(console.error);
+    
   }, []);
-  
+
+  // --- Local State Persistence ---
+  React.useEffect(() => {
+    localStorage.setItem('kasam_currentUser', JSON.stringify(currentUser));
+  }, [currentUser]);
+  React.useEffect(() => {
+    localStorage.setItem('kasam_theme', JSON.stringify(theme));
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+
+  // --- Data Hydration ---
   const populatedTickets = React.useMemo(() => {
-    if (!users.length || !rawTickets.length) {
-        return rawTickets; // Return raw if users not loaded, to avoid blank screen
-    }
+    if (!users.length || !tickets.length) return [];
     const userMap = new Map(users.map(u => [u.id, u]));
+    const findUser = id => userMap.get(id) || null;
+    return tickets.map(ticket => ({
+      ...ticket,
+      raisedBy: findUser(ticket.raisedBy),
+      assignedTo: findUser(ticket.assignedTo),
+      assignedClusterManager: findUser(ticket.assignedClusterManager),
+      closureRequestedBy: findUser(ticket.closureRequestedBy),
+      history: (ticket.history || []).map(h => ({ ...h, updatedBy: findUser(h.updatedBy) })),
+      comments: (ticket.comments || []).map(c => ({ ...c, user: findUser(c.user) })),
+    }));
+  }, [tickets, users]);
 
-    const findUser = (id) => userMap.get(id) || null;
+  const toggleTheme = React.useCallback(() => setTheme(prev => (prev === 'light' ? 'dark' : 'light')), []);
 
-    return rawTickets.map(ticket => {
-        return {
-            ...ticket,
-            raisedBy: findUser(ticket.raisedBy),
-            assignedTo: findUser(ticket.assignedTo),
-            assignedClusterManager: findUser(ticket.assignedClusterManager),
-            closureRequestedBy: findUser(ticket.closureRequestedBy),
-            history: (ticket.history || []).map(h => ({
-                ...h,
-                updatedBy: findUser(h.updatedBy),
-            })),
-            comments: (ticket.comments || []).map(c => ({
-                ...c,
-                user: findUser(c.user),
-            })),
-        };
-    });
-  }, [rawTickets, users]);
-
-  const sendEmailNotification = (userId) => {
-    const user = users.find(u => u.id === userId);
-    if (user && user.email) {
-      console.log(`%c--- SIMULATING EMAIL NOTIFICATION ---\nTo: ${user.name} <${user.email}>`, 'background: #f0f9ff; color: #0284c7; padding: 4px;');
-    }
-  };
-
-  const toggleTheme = React.useCallback(() => setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light')), []);
-  const changeUser = React.useCallback((userId) => {
-    const newUser = users.find(u => u.id === userId);
-    if (newUser) {
-      setCurrentUser(newUser);
-      setActiveView('dashboard');
-    }
-  }, [users]);
-  
   const handleResetData = async () => {
-    if (window.confirm('Are you sure you want to reset all data to the original demo state? All your changes will be lost.')) {
+    if (window.confirm('Are you sure you want to reset all data in Firestore? This cannot be undone.')) {
+        console.log("Resetting database...");
         setIsLoading(true);
-        // Delete all documents in collections
-        const collections = ['tickets', 'users', 'categoryAssignments'];
-        for (const col of collections) {
-            const snapshot = await db.collection(col).get();
-            const batch = db.batch();
-            snapshot.docs.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-        }
-        localStorage.removeItem('retailOps_theme');
+        // This is a simplified reset for client-side. A proper reset would need cloud functions.
+        // We'll just clear the 'seeded' flag and let the seeder run again on reload.
+        await db.collection('meta').doc('config').delete();
+        localStorage.removeItem('kasam_currentUser');
+        localStorage.removeItem('kasam_theme');
         window.location.reload();
     }
   };
-
-  const createUser = (newUserData) => {
-    const id = `user-${Date.now()}`;
-    db.collection('users').doc(id).set({ ...newUserData, id });
+  
+  // --- Auth Handlers ---
+  const openLoginModal = (user) => {
+    setUserToLogin(user);
+    setLoginModalOpen(true);
   };
+
+  const handleLogin = (user, email, password) => {
+    const userInDb = users.find(u => u.id === user.id);
+    if (userInDb && userInDb.email === email && userInDb.password === password) {
+      if (userInDb.role === Role.ADMIN && !userInDb.passwordChanged) {
+          setFirstAdminLogin(true);
+      }
+      setCurrentUser(userInDb);
+      return true;
+    }
+    return false;
+  };
+  
+  const logout = () => {
+      setCurrentUser(null);
+      setActiveView('dashboard');
+  };
+  
+  const changePassword = async (userId, newPassword) => {
+      await db.collection('users').doc(userId).update({ password: newPassword });
+      if (userId === currentUser?.id) {
+          setCurrentUser(prev => ({ ...prev, password: newPassword }));
+      }
+  };
+
+  const changeAdminPassword = async (newPassword) => {
+    const adminUser = users.find(u => u.role === Role.ADMIN);
+    if(adminUser) {
+        await db.collection('users').doc(adminUser.id).update({ 
+            password: newPassword,
+            passwordChanged: true
+        });
+        setFirstAdminLogin(false);
+        alert("Admin password updated successfully.");
+    }
+  };
+  
+  // --- Data Mutation Functions (Firestore) ---
+  const createUser = (userData, password) => {
+    const id = `user-${Date.now()}`;
+    const newUser = { ...userData, id, password, ...(userData.role === Role.ADMIN && {passwordChanged: false}) };
+    db.collection('users').doc(id).set(newUser);
+  };
+  
   const updateUser = (userId, updates) => {
     db.collection('users').doc(userId).update(updates);
   };
+
   const deleteUser = (userId) => {
-    if (userId === currentUser.id) {
-      alert("You cannot delete the currently logged-in user.");
+    if (currentUser?.id === userId) {
+      alert("You cannot delete yourself.");
       return;
     }
     db.collection('users').doc(userId).delete();
-    // Also remove user from category assignments
-    Object.keys(Category).forEach(category => {
-        updateCategoryAssignment(category, userId, false);
-    });
   };
+  
   const updateCategoryAssignment = (category, userId, isAssigned) => {
-      const docRef = db.collection('categoryAssignments').doc('assignments');
-      const key = `assignments.${category}`;
-      if (isAssigned) {
-        docRef.update({ [key]: firebase.firestore.FieldValue.arrayUnion(userId) });
-      } else {
-        docRef.update({ [key]: firebase.firestore.FieldValue.arrayRemove(userId) });
-      }
+      const docRef = db.collection('meta').doc('categoryAssignments');
+      db.runTransaction(async (transaction) => {
+          const doc = await transaction.get(docRef);
+          const data = doc.data() || {};
+          const current = data[category] || [];
+          const newAssignments = isAssigned
+              ? [...new Set([...current, userId])]
+              : current.filter(id => id !== userId);
+          transaction.update(docRef, { [category]: newAssignments });
+      });
   };
 
   const assignTicketToSelf = (ticketId) => {
@@ -1292,37 +1449,23 @@ const App = () => {
     });
   };
 
-  const assignTicketToSpecialist = (ticketId, specialistId) => {
-    const ticketRef = db.collection('tickets').doc(ticketId);
-    db.runTransaction(async (transaction) => {
-        const ticketDoc = await transaction.get(ticketRef);
-        if (!ticketDoc.exists) throw "Document does not exist!";
-        
-        const currentTicket = ticketDoc.data();
-        if (currentTicket.assignedTo === specialistId) return;
+  const assignTicketToSpecialist = async (ticketId, specialistId) => {
+     const ticketRef = db.collection('tickets').doc(ticketId);
+     const doc = await ticketRef.get();
+     const ticket = doc.data();
 
-        let newStatus = currentTicket.status;
-        const assignee = users.find(u => u.id === specialistId);
-        
-        if (assignee) {
-          if (currentTicket.status === Status.RAISED) newStatus = Status.ASSIGNED;
-          sendEmailNotification(specialistId);
-        } else {
-          newStatus = Status.RAISED;
-        }
-
-        const historyMessage = assignee ? `Assigned to ${assignee.name} by ${currentUser.name}.` : `Unassigned and returned to team queue by ${currentUser.name}.`;
-        const newComment = { id: `COMMENT-${Date.now()}`, user: currentUser.id, text: historyMessage, timestamp: new Date().toISOString() };
-        const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
-        
-        transaction.update(ticketRef, {
-            assignedTo: specialistId || null,
-            status: newStatus,
-            history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
-            comments: firebase.firestore.FieldValue.arrayUnion(newComment),
-            updatedAt: new Date().toISOString()
-        });
-    });
+     if (ticket) {
+         let newStatus = ticket.status;
+         if (specialistId && ticket.status === Status.RAISED) newStatus = Status.ASSIGNED;
+         else if (!specialistId) newStatus = Status.RAISED;
+         const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+         ticketRef.update({
+             assignedTo: specialistId || null,
+             status: newStatus,
+             history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+             updatedAt: new Date().toISOString()
+         });
+     }
   };
 
   const getVisibleTickets = React.useMemo(() => {
@@ -1333,7 +1476,7 @@ const App = () => {
       case Role.DEPARTMENT_SPECIALIST:
         return populatedTickets.filter(ticket => {
           if (ticket.assignedTo?.id === currentUser.id) return true;
-          const specialistCategories = Object.keys(categoryAssignments?.assignments || {}).filter(cat => categoryAssignments.assignments[cat]?.includes(currentUser.id));
+          const specialistCategories = Object.keys(categoryAssignments || {}).filter(cat => categoryAssignments[cat]?.includes(currentUser.id));
           if (!ticket.assignedTo && specialistCategories.includes(ticket.category)) return true;
           return false;
         });
@@ -1347,31 +1490,30 @@ const App = () => {
     const newTicket = { 
         ...newTicketData, 
         status: Status.RAISED, 
-        assignedTo: null, 
+        assignedTo: null,
+        closureRequestedBy: null, 
         history: [{ status: Status.RAISED, timestamp: new Date().toISOString(), updatedBy: currentUser.id }], 
         comments: [] 
     };
     db.collection('tickets').doc(newTicket.id).set(newTicket);
-    
-    sendEmailNotification(newTicket.assignedClusterManager);
-    const specialistsToNotifyIds = categoryAssignments?.assignments?.[newTicket.category] || [];
-    specialistsToNotifyIds.forEach(sendEmailNotification);
   };
 
   const updateTicketStatus = (ticketId, newStatus) => {
     const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
-    db.collection('tickets').doc(ticketId).update({
-        status: newStatus,
-        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
-        updatedAt: new Date().toISOString()
+    db.collection('tickets').doc(ticketId).update({ 
+        status: newStatus, 
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent), 
+        updatedAt: new Date().toISOString() 
     });
   };
+
   const addComment = (ticketId, commentText) => {
-    const newComment = { id: `COMMENT-${Date.now()}`, user: currentUser.id, text: commentText, timestamp: new Date().toISOString() };
+    const newComment = { id: `C-${Date.now()}`, user: currentUser.id, text: commentText, timestamp: new Date().toISOString() };
     db.collection('tickets').doc(ticketId).update({
         comments: firebase.firestore.FieldValue.arrayUnion(newComment)
     });
   };
+
   const requestTicketClosure = (ticketId) => {
     const historyEvent = { status: Status.PENDING_CLOSURE, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
     db.collection('tickets').doc(ticketId).update({
@@ -1381,6 +1523,7 @@ const App = () => {
         updatedAt: new Date().toISOString()
     });
   };
+  
   const approveTicketClosure = (ticketId) => {
     const historyEvent = { status: Status.CLOSED, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
     db.collection('tickets').doc(ticketId).update({
@@ -1389,8 +1532,9 @@ const App = () => {
         updatedAt: new Date().toISOString()
     });
   };
+
   const rejectTicketClosure = (ticketId, reason) => {
-    const newComment = { id: `COMMENT-${Date.now()}`, user: currentUser.id, text: `Closure Rejected: ${reason}`, timestamp: new Date().toISOString() };
+    const newComment = { id: `C-${Date.now()}`, user: currentUser.id, text: `Closure Rejected: ${reason}`, timestamp: new Date().toISOString() };
     const historyEvent = { status: Status.IN_PROGRESS, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
     db.collection('tickets').doc(ticketId).update({
         status: Status.IN_PROGRESS,
@@ -1405,9 +1549,7 @@ const App = () => {
     if (!process.env.API_KEY) return "API key not configured.";
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const commentsText = (ticket.comments || []).map(c => {
-        return `- ${c.user?.name || 'Unknown'}: "${c.text}"`;
-      }).join('\\n');
+      const commentsText = (ticket.comments || []).map(c => `- ${c.user?.name || 'Unknown'}: "${c.text}"`).join('\\n');
       const prompt = `Summarize the following support ticket in 2-3 sentences. Focus on the core issue and the latest status.\\n\\nTicket ID: ${ticket.id}\\nTitle: ${ticket.title}\\nRaised by: ${ticket.raisedBy?.name}\\nStore: ${ticket.store}\\nCategory: ${ticket.category}\\nStatus: ${ticket.status}\\nDescription: ${ticket.description}\\n\\nComments:\\n${commentsText}`;
       const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
       return response.text;
@@ -1418,24 +1560,25 @@ const App = () => {
   };
 
   const contextValue = React.useMemo(() => ({
-    currentUser, changeUser, theme, toggleTheme, handleResetData, tickets: getVisibleTickets, allTickets: populatedTickets, createTicket, updateTicketStatus, addComment, assignTicketToSelf, assignTicketToSpecialist, requestTicketClosure, approveTicketClosure, rejectTicketClosure, generateTicketSummary, users, createUser, updateUser, deleteUser, categoryAssignments, updateCategoryAssignment,
-  }), [currentUser, changeUser, theme, toggleTheme, getVisibleTickets, populatedTickets, users, categoryAssignments]);
+    currentUser, theme, toggleTheme, handleResetData, tickets: getVisibleTickets, allTickets: populatedTickets, createTicket, updateTicketStatus, addComment, assignTicketToSelf, assignTicketToSpecialist, requestTicketClosure, approveTicketClosure, rejectTicketClosure, generateTicketSummary, users, createUser, updateUser, deleteUser, categoryAssignments, updateCategoryAssignment,
+    activeView, setActiveView, openLoginModal, logout, changePassword,
+  }), [currentUser, theme, getVisibleTickets, populatedTickets, users, categoryAssignments, activeView]);
   
   if (isLoading) {
     return React.createElement('div', { className: "flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900" },
       React.createElement('div', { className: "flex items-center space-x-2 text-gray-500 dark:text-gray-400" },
         React.createElement(ArrowPathIcon, { className: "h-6 w-6 animate-spin" }),
-        React.createElement('span', { className: "text-lg font-medium" }, "Connecting to Database...")
+        React.createElement('span', { className: "text-lg font-medium" }, "Connecting to Kasam ConneKT...")
       )
     );
   }
 
   const renderActiveView = () => {
     if (!currentUser) {
-        return React.createElement('div', { className: "text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow-md" },
-            React.createElement('h2', { className: "text-2xl font-bold" }, "No User Selected"),
-            React.createElement('p', { className: "mt-2 text-gray-600 dark:text-gray-300" }, "Please add a user or reset data to begin.")
-        );
+       return React.createElement('div', { className: "text-center py-20" },
+            React.createElement('h1', { className: "text-4xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Welcome to Kasam ConneKT"),
+            React.createElement('p', { className: "mt-4 text-lg text-gray-600 dark:text-gray-300" }, "Please select a user from the top right to log in.")
+       );
     }
     switch (activeView) {
       case 'dashboard': return React.createElement(Dashboard, null);
@@ -1450,8 +1593,18 @@ const App = () => {
 
   return React.createElement(AppContext.Provider, { value: contextValue },
     React.createElement('div', { className: "min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300" },
-      React.createElement(Header, { activeView: activeView, setActiveView: setActiveView }),
-      React.createElement('main', { className: "p-4 sm:p-6 lg:p-8" }, renderActiveView())
+      React.createElement(Header, null),
+      React.createElement('main', { className: "p-4 sm:p-6 lg:p-8" }, renderActiveView()),
+      React.createElement(LoginModal, { 
+          isOpen: isLoginModalOpen, 
+          onClose: () => setLoginModalOpen(false), 
+          user: userToLogin, 
+          onLogin: handleLogin,
+      }),
+      React.createElement(ChangePasswordModal, {
+          isOpen: isFirstAdminLogin,
+          onPasswordChange: changeAdminPassword
+      })
     )
   );
 };
