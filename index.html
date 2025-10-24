@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -21,6 +20,7 @@
     </script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -56,6 +56,7 @@ if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
 const storage = firebase.storage();
+const db = firebase.firestore();
 
 // --- Inlined Code from all files ---
 
@@ -234,7 +235,7 @@ const TICKETS = [
   { id: 'TICKET-001', title: 'Leaking AC unit in main aisle', description: 'The main air conditioning unit in aisle 5 has been leaking water for the past two hours. It is creating a slipping hazard for customers. We have placed a bucket under it for now but it needs urgent repair.', status: Status.ASSIGNED, category: Category.MAINTENANCE, priority: 'High', raisedBy: sm1, store: 'Downtown Central', assignedTo: ds3, assignedClusterManager: cm1, createdAt: '2023-10-26T09:00:00Z', updatedAt: '2023-10-26T09:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-26T09:00:00Z', updatedBy: sm1 }, { status: Status.ASSIGNED, timestamp: '2023-10-26T09:00:01Z', updatedBy: ds3 }, ], fileAttachments: [] },
   { id: 'TICKET-002', title: 'POS Terminal 2 is not processing credit cards', description: 'The credit card reader on POS Terminal 2 is declining all cards. Swiping, inserting chip, and tapping all fail. The terminal has been restarted but the issue persists. We are directing all customers to other terminals.', status: Status.IN_PROGRESS, category: Category.IT, priority: 'High', raisedBy: sm2, store: 'Uptown Plaza', assignedTo: ds1, assignedClusterManager: cm1, createdAt: '2023-10-26T10:30:00Z', updatedAt: '2023-10-26T11:00:00Z', comments: [ { id: 'C-001', user: ds1, text: 'I am looking into the issue remotely. Might need to dispatch a tech.', timestamp: '2023-10-26T11:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-26T10:30:00Z', updatedBy: sm2 }, { status: Status.ASSIGNED, timestamp: '2023-10-26T10:30:01Z', updatedBy: ds1 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-26T11:00:00Z', updatedBy: ds1 }, ], fileAttachments: [] },
   { id: 'TICKET-003', title: 'Request for new cashier training', description: 'We have two new hires starting next week who will be working as cashiers. They need to be scheduled for the standard POS and customer service training.', status: Status.PENDING_CLOSURE, category: Category.HR, priority: 'Medium', raisedBy: sm3, store: 'Westside Mall', assignedTo: ds2, assignedClusterManager: cm2, closureRequestedBy: sm3, createdAt: '2023-10-25T14:00:00Z', updatedAt: '2023-10-26T08:30:00Z', comments: [ { id: 'C-003', user: ds2, text: 'Training scheduled for Tuesday. All materials sent.', timestamp: '2023-10-26T08:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-25T14:00:00Z', updatedBy: sm3 }, { status: Status.ASSIGNED, timestamp: '2023-10-25T14:00:01Z', updatedBy: ds2 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-25T15:00:00Z', updatedBy: ds2 }, { status: Status.COMPLETED, timestamp: '2023-10-26T08:00:00Z', updatedBy: ds2 }, { status: Status.PENDING_CLOSURE, timestamp: '2023-10-26T08:30:00Z', updatedBy: sm3 } ], fileAttachments: [] },
-  { id: 'TICKET-004', title: 'Invoice #5678 discrepancy', description: 'We received invoice #5678 from our vendor, but the amount is higher than quoted. Please investigate.', status: Status.RAISED, category: Category.ACCOUNTS, priority: 'Medium', raisedBy: sm4, store: 'Eastside Market', assignedTo: undefined, assignedClusterManager: cm2, createdAt: '2023-10-24T11:00:00Z', updatedAt: '2023-10-25T16:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-24T11:00:00Z', updatedBy: sm4 }, ], fileAttachments: [] },
+  { id: 'TICKET-004', title: 'Invoice #5678 discrepancy', description: 'We received invoice #5678 from our vendor, but the amount is higher than quoted. Please investigate.', status: Status.RAISED, category: Category.ACCOUNTS, priority: 'Medium', raisedBy: sm4, store: 'Eastside Market', assignedTo: null, assignedClusterManager: cm2, createdAt: '2023-10-24T11:00:00Z', updatedAt: '2023-10-25T16:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-24T11:00:00Z', updatedBy: sm4 }, ], fileAttachments: [] },
   { id: 'TICKET-005', title: 'Broken shelf in the beverage aisle', description: 'A customer accidentally knocked over a display, and one of the shelves in the beverage aisle is now broken and unsafe. The area has been cordoned off.', status: Status.CLOSED, category: Category.MAINTENANCE, priority: 'High', raisedBy: sm1, store: 'Downtown Central', assignedTo: ds3, assignedClusterManager: cm1, createdAt: '2023-10-23T18:00:00Z', updatedAt: '2023-10-24T14:00:00Z', comments: [ { id: 'C-004', user: ds3, text: 'Maintenance team fixed the shelf and the area is clear now.', timestamp: '2023-10-24T13:30:00Z'}, { id: 'C-005', user: ops1, text: 'Reviewed and closed.', timestamp: '2023-10-24T14:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-23T18:00:00Z', updatedBy: sm1 }, { status: Status.ASSIGNED, timestamp: '2023-10-23T18:00:01Z', updatedBy: ds3 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-24T10:00:00Z', updatedBy: ds3 }, { status: Status.COMPLETED, timestamp: '2023-10-24T13:30:00Z', updatedBy: ds3 }, { status: Status.CLOSED, timestamp: '2023-10-24T14:00:00Z', updatedBy: ops1 } ], fileAttachments: [] },
 ];
 
@@ -342,11 +343,15 @@ const UserManagement = () => {
   const context = React.useContext(AppContext);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [editingUser, setEditingUser] = React.useState(null);
+  
+  if (!context) return null;
+  
   const departmentSpecialists = React.useMemo(() => {
     return (context?.users || []).filter(user => user.role === Role.DEPARTMENT_SPECIALIST);
   }, [context?.users]);
-  if (!context) return null;
+  
   const { users, deleteUser, categoryAssignments, updateCategoryAssignment } = context;
+  
   const handleOpenModal = (user = null) => {
     setEditingUser(user);
     setIsModalOpen(true);
@@ -423,7 +428,7 @@ const UserManagement = () => {
                 departmentSpecialists.map(specialist => React.createElement('label', { key: specialist.id, className: "flex items-center space-x-3" },
                   React.createElement('input', {
                     type: "checkbox",
-                    checked: categoryAssignments[category]?.includes(specialist.id) || false,
+                    checked: categoryAssignments?.assignments?.[category]?.includes(specialist.id) || false,
                     onChange: (e) => updateCategoryAssignment(category, specialist.id, e.target.checked),
                     className: "h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                   }),
@@ -452,6 +457,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 const AdminAnalytics = () => {
   const context = React.useContext(AppContext);
+
   const ticketsByStatus = React.useMemo(() => {
     const statusCounts = Object.values(Status).reduce((acc, status) => {
       acc[status] = 0;
@@ -463,6 +469,7 @@ const AdminAnalytics = () => {
     const orderedStatuses = [Status.RAISED, Status.ASSIGNED, Status.IN_PROGRESS, Status.COMPLETED, Status.PENDING_CLOSURE, Status.CLOSED];
     return orderedStatuses.map(status => ({ name: status, value: statusCounts[status] }));
   }, [context?.allTickets]);
+
   const ticketsByCluster = React.useMemo(() => {
     const clusterManagers = (context?.users || []).filter(u => u.role === Role.CLUSTER_MANAGER);
     const clusterCounts = {};
@@ -480,6 +487,7 @@ const AdminAnalytics = () => {
     });
     return Object.entries(clusterCounts).map(([name, data]) => ({ name, ...data }));
   }, [context?.allTickets, context?.users]);
+
   if (!context) return null;
   const { allTickets } = context;
   const totalTickets = allTickets.length;
@@ -579,8 +587,7 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const assignedClusterManager = users.find(u => u.id === clusterManagerId);
-    if (!title || !description || !currentUser.store || !assignedClusterManager) {
+    if (!title || !description || !currentUser.store || !clusterManagerId) {
       alert('Please fill all fields and select a cluster manager.');
       return;
     }
@@ -617,9 +624,9 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
       description,
       category,
       priority,
-      raisedBy: currentUser,
+      raisedBy: currentUser.id,
       store: currentUser.store,
-      assignedClusterManager: assignedClusterManager,
+      assignedClusterManager: clusterManagerId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       fileAttachments,
@@ -702,6 +709,9 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
   const [rejectionReason, setRejectionReason] = React.useState('');
   const [showRejectionInput, setShowRejectionInput] = React.useState(false);
   const [selectedSpecialistId, setSelectedSpecialistId] = React.useState(null);
+
+  if (!context || !isOpen) return null;
+
   const isAssignmentChanged = React.useMemo(() => (ticket.assignedTo?.id || null) !== selectedSpecialistId, [selectedSpecialistId, ticket.assignedTo]);
 
   React.useEffect(() => {
@@ -718,11 +728,10 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
 
   const departmentSpecialistsForCategory = React.useMemo(() => {
     if (!context) return [];
-    const specialistIds = context.categoryAssignments[ticket.category] || [];
+    const specialistIds = context.categoryAssignments?.assignments?.[ticket.category] || [];
     return context.users.filter(u => u.role === Role.DEPARTMENT_SPECIALIST && specialistIds.includes(u.id));
   }, [context, ticket.category]);
-
-  if (!context || !isOpen) return null;
+  
   const { currentUser, addComment, updateTicketStatus, generateTicketSummary, assignTicketToSelf, assignTicketToSpecialist, requestTicketClosure, approveTicketClosure, rejectTicketClosure } = context;
   
   const handleGenerateSummary = async () => {
@@ -754,16 +763,16 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
   };
   const isCurrentUserSpecialistForCategory = React.useMemo(() => {
     if (currentUser.role !== Role.DEPARTMENT_SPECIALIST) return false;
-    return context.categoryAssignments[ticket.category]?.includes(currentUser.id) ?? false;
+    return context.categoryAssignments?.assignments?.[ticket.category]?.includes(currentUser.id) ?? false;
   }, [currentUser, ticket.category, context.categoryAssignments]);
 
   const canAssignToSelf = currentUser.role === Role.DEPARTMENT_SPECIALIST && !ticket.assignedTo && isCurrentUserSpecialistForCategory;
   const canManageAssignment = ((currentUser.role === Role.ADMIN || currentUser.role === Role.OPERATIONS_HEAD) || (currentUser.role === Role.CLUSTER_MANAGER && currentUser.id === ticket.assignedClusterManager?.id)) && ticket.status !== Status.CLOSED;
   const canStartProgress = currentUser.id === ticket.assignedTo?.id && ticket.status === Status.ASSIGNED;
   const canMarkAsComplete = currentUser.id === ticket.assignedTo?.id && ticket.status === Status.IN_PROGRESS;
-  const canRequestClosure = currentUser.id === ticket.raisedBy.id && ticket.status === Status.COMPLETED;
+  const canRequestClosure = currentUser.id === ticket.raisedBy?.id && ticket.status === Status.COMPLETED;
   const canApproveRejectClosure = [Role.ADMIN, Role.OPERATIONS_HEAD].includes(currentUser.role) && ticket.status === Status.PENDING_CLOSURE;
-
+  
   const renderDetailItem = (Icon, label, value) => React.createElement('div', null,
     React.createElement('dt', { className: "text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center" }, React.createElement(Icon, { className: "h-4 w-4 mr-2" }), label),
     React.createElement('dd', { className: "mt-1 text-sm text-gray-900 dark:text-white" }, value)
@@ -790,7 +799,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
               React.createElement('dd', { className: `mt-1 text-sm font-semibold ${ticket.priority === 'High' ? 'text-red-500' : ticket.priority === 'Medium' ? 'text-yellow-500' : 'text-green-500'}` }, ticket.priority)
             ),
             React.createElement('div', { className: "col-span-2" }, renderDetailItem(TagIcon, "Category", ticket.category)),
-            React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Raised By", `${ticket.raisedBy.name} (${ticket.store})`)),
+            React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Raised By", `${ticket.raisedBy?.name || '...'} (${ticket.store})`)),
             React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Cluster Manager", ticket.assignedClusterManager?.name || 'N/A')),
             React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Assigned To", canManageAssignment ? React.createElement('div', { className: "flex items-center gap-2 mt-1" }, React.createElement('select', { value: selectedSpecialistId || '', onChange: (e) => setSelectedSpecialistId(e.target.value || null), className: "block w-full text-sm rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500" }, React.createElement('option', { value: "" }, "Unassigned"), departmentSpecialistsForCategory.length > 0 ? departmentSpecialistsForCategory.map(ds => React.createElement('option', { key: ds.id, value: ds.id }, ds.name)) : React.createElement('option', { disabled: true }, "No specialists for this category"))) : (ticket.assignedTo?.name || 'Unassigned'))),
             React.createElement('div', { className: "col-span-1" }, renderDetailItem(CalendarIcon, "Created On", new Date(ticket.createdAt).toLocaleString())),
@@ -825,7 +834,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
                 ticket.comments.length > 0 ? [...ticket.comments].reverse().map(comment => React.createElement('div', { key: comment.id, className: "flex items-start space-x-3" },
                   React.createElement('div', { className: "flex-shrink-0" }, React.createElement(UserCircleIcon, { className: "h-8 w-8 text-gray-400" })),
                   React.createElement('div', { className: "min-w-0 flex-1 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg" },
-                    React.createElement('p', { className: "text-sm font-medium text-gray-900 dark:text-white" }, comment.user.name),
+                    React.createElement('p', { className: "text-sm font-medium text-gray-900 dark:text-white" }, comment.user?.name || 'Unknown User'),
                     React.createElement('p', { className: "text-sm text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-wrap" }, comment.text),
                     React.createElement('p', { className: "text-xs text-gray-500 dark:text-gray-400 mt-2" }, new Date(comment.timestamp).toLocaleString())
                   )
@@ -840,7 +849,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
               [...ticket.history].reverse().map((event, index) => React.createElement('li', { key: index, className: "flex items-start" },
                 React.createElement('div', { className: "flex-shrink-0" }, React.createElement('div', { className: `h-2 w-2 rounded-full mt-1.5 ${statusStylesModal[event.status].bg}` })),
                 React.createElement('div', { className: "ml-3" },
-                  React.createElement('p', { className: "text-sm text-gray-700 dark:text-gray-300" }, `Status changed to `, React.createElement('span', { className: `font-medium ${statusStylesModal[event.status].text}` }, event.status), ` by ${event.updatedBy.name}.`),
+                  React.createElement('p', { className: "text-sm text-gray-700 dark:text-gray-300" }, `Status changed to `, React.createElement('span', { className: `font-medium ${statusStylesModal[event.status].text}` }, event.status), ` by ${event.updatedBy?.name || 'Unknown User'}.`),
                   React.createElement('p', { className: "text-xs text-gray-500 dark:text-gray-400" }, new Date(event.timestamp).toLocaleString())
                 )
               ))
@@ -890,7 +899,7 @@ const TicketItem = ({ ticket, onViewDetails }) => {
       React.createElement('p', { className: "mt-1 text-sm text-gray-500 dark:text-gray-400" }, `ID: ${ticket.id}`),
       React.createElement('div', { className: "mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300" },
         React.createElement('div', { className: "flex items-center" }, React.createElement(TagIcon, { className: "h-4 w-4 mr-2 text-gray-400" }), React.createElement('span', null, ticket.category)),
-        React.createElement('div', { className: "flex items-center" }, React.createElement(UserIcon, { className: "h-4 w-4 mr-2 text-gray-400" }), React.createElement('span', null, `${ticket.raisedBy.name} (${ticket.store})`)),
+        React.createElement('div', { className: "flex items-center" }, React.createElement(UserIcon, { className: "h-4 w-4 mr-2 text-gray-400" }), React.createElement('span', null, `${ticket.raisedBy?.name || '...'} (${ticket.store})`)),
         React.createElement('div', { className: "flex items-center" }, React.createElement(CalendarIcon, { className: "h-4 w-4 mr-2 text-gray-400" }), React.createElement('span', null, new Date(ticket.createdAt).toLocaleDateString()))
       )
     ),
@@ -929,19 +938,20 @@ const Dashboard = () => {
   const [specialistFilter, setSpecialistFilter] = React.useState('ALL');
   const [isCreateModalOpen, setCreateModalOpen] = React.useState(false);
 
-  const clusterManagers = React.useMemo(() => (context?.users || []).filter(u => u.role === Role.CLUSTER_MANAGER), [context?.users]);
-  const departmentSpecialists = React.useMemo(() => (context?.users || []).filter(u => u.role === Role.DEPARTMENT_SPECIALIST), [context?.users]);
+  if (!context) return null;
+  const { users, tickets, currentUser } = context;
+
+  const clusterManagers = React.useMemo(() => (users || []).filter(u => u.role === Role.CLUSTER_MANAGER), [users]);
+  const departmentSpecialists = React.useMemo(() => (users || []).filter(u => u.role === Role.DEPARTMENT_SPECIALIST), [users]);
 
   const filteredTickets = React.useMemo(() => {
-    return (context?.tickets || [])
+    return (tickets || [])
       .filter(ticket => statusFilter === 'ALL' ? true : ticket.status === statusFilter)
       .filter(ticket => clusterFilter === 'ALL' ? true : ticket.assignedClusterManager?.id === clusterFilter)
       .filter(ticket => specialistFilter === 'ALL' ? true : ticket.assignedTo?.id === specialistFilter)
       .filter(ticket => ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) || ticket.id.toLowerCase().includes(searchQuery.toLowerCase()));
-  }, [context?.tickets, statusFilter, clusterFilter, specialistFilter, searchQuery]);
+  }, [tickets, statusFilter, clusterFilter, specialistFilter, searchQuery]);
 
-  if (!context) return null;
-  const { currentUser } = context;
 
   const handleDownloadCSV = () => {
     const pendingStatuses = [Status.RAISED, Status.ASSIGNED, Status.IN_PROGRESS, Status.PENDING_CLOSURE];
@@ -953,7 +963,18 @@ const Dashboard = () => {
     const headers = ['ID', 'Title', 'Status', 'Priority', 'Category', 'Store', 'Raised By', 'Assigned To', 'Cluster Manager', 'Created At'];
     const csvRows = [headers.join(',')];
     for (const ticket of ticketsToExport) {
-      const row = [ticket.id, `"${ticket.title.replace(/"/g, '""')}"`, ticket.status, ticket.priority, ticket.category, ticket.store, ticket.raisedBy.name, ticket.assignedTo?.name || 'Unassigned', ticket.assignedClusterManager?.name || 'N/A', new Date(ticket.createdAt).toISOString()].join(',');
+      const row = [
+        ticket.id, 
+        `"${ticket.title.replace(/"/g, '""')}"`, 
+        ticket.status, 
+        ticket.priority, 
+        ticket.category, 
+        ticket.store, 
+        ticket.raisedBy?.name || 'N/A', 
+        ticket.assignedTo?.name || 'Unassigned', 
+        ticket.assignedClusterManager?.name || 'N/A', 
+        new Date(ticket.createdAt).toISOString()
+      ].join(',');
       csvRows.push(row);
     }
     const csvString = csvRows.join('\n');
@@ -1059,43 +1080,25 @@ const Header = ({ activeView, setActiveView }) => {
 };
 
 // --- App.tsx ---
-const getInitialState = (key, defaultValue) => {
-  try {
-    const savedItem = localStorage.getItem(key);
-    return savedItem ? JSON.parse(savedItem) : defaultValue;
-  } catch (error) {
-    console.error(`Error reading from localStorage key “${key}”:`, error);
-    return defaultValue;
-  }
+const getInitialTheme = () => {
+    try {
+      const savedItem = localStorage.getItem('retailOps_theme');
+      return savedItem ? JSON.parse(savedItem) : 'light';
+    } catch (error) {
+      return 'light';
+    }
 };
 
 const App = () => {
-  const [users, setUsers] = React.useState(() => getInitialState('retailOps_users', USERS));
-  const [tickets, setTickets] = React.useState(() => getInitialState('retailOps_tickets', TICKETS));
-  const [categoryAssignments, setCategoryAssignments] = React.useState(() => getInitialState('retailOps_categoryAssignments', {
-    [Category.IT]: ['user-ds-1'],
-    [Category.HR]: ['user-ds-2'],
-    [Category.MAINTENANCE]: ['user-ds-3'],
-    [Category.ACCOUNTS]: ['user-ds-4', 'user-ds-5'],
-  }));
+  const [users, setUsers] = React.useState([]);
+  const [rawTickets, setRawTickets] = React.useState([]);
+  const [categoryAssignments, setCategoryAssignments] = React.useState(null);
+  const [currentUser, setCurrentUser] = React.useState(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
-  const [currentUser, setCurrentUser] = React.useState(() => {
-    const savedUsers = getInitialState('retailOps_users', USERS);
-    return savedUsers[0] || null;
-  });
-
-  const [theme, setTheme] = React.useState(() => getInitialState('retailOps_theme', 'light'));
+  const [theme, setTheme] = React.useState(getInitialTheme);
   const [activeView, setActiveView] = React.useState('dashboard');
   
-  React.useEffect(() => {
-    localStorage.setItem('retailOps_users', JSON.stringify(users));
-  }, [users]);
-  React.useEffect(() => {
-    localStorage.setItem('retailOps_tickets', JSON.stringify(tickets));
-  }, [tickets]);
-  React.useEffect(() => {
-    localStorage.setItem('retailOps_categoryAssignments', JSON.stringify(categoryAssignments));
-  }, [categoryAssignments]);
   React.useEffect(() => {
     localStorage.setItem('retailOps_theme', theme);
     if (theme === 'dark') {
@@ -1105,9 +1108,110 @@ const App = () => {
     }
   }, [theme]);
 
-  const sendEmailNotification = (to, subject, body) => {
-    if (to.email) {
-      console.log(`%c--- EMAIL NOTIFICATION ---\nTo: ${to.name} <${to.email}>\nSubject: ${subject}\n\n${body}\n--------------------------`, 'background: #f0f9ff; color: #0284c7; padding: 4px;');
+  React.useEffect(() => {
+    // Seed data if database is empty
+    const seedData = async () => {
+        const usersRef = db.collection('users');
+        const snapshot = await usersRef.get();
+        if (snapshot.empty) {
+            console.log("Database is empty. Seeding initial data...");
+            const batch = db.batch();
+
+            // Seed users
+            USERS.forEach(user => {
+                const docRef = db.collection('users').doc(user.id);
+                batch.set(docRef, user);
+            });
+            
+            // Seed tickets (converting user objects to IDs)
+            const transformUserFields = (userObject) => userObject ? userObject.id : null;
+
+            TICKETS.forEach(ticket => {
+                const docRef = db.collection('tickets').doc(ticket.id);
+                const transformedTicket = {
+                    ...ticket,
+                    raisedBy: transformUserFields(ticket.raisedBy),
+                    assignedTo: transformUserFields(ticket.assignedTo),
+                    assignedClusterManager: transformUserFields(ticket.assignedClusterManager),
+                    closureRequestedBy: transformUserFields(ticket.closureRequestedBy),
+                    history: ticket.history.map(h => ({...h, updatedBy: transformUserFields(h.updatedBy)})),
+                    comments: ticket.comments.map(c => ({...c, user: transformUserFields(c.user)})),
+                };
+                batch.set(docRef, transformedTicket);
+            });
+            
+            // Seed category assignments
+            const assignmentsRef = db.collection('categoryAssignments').doc('assignments');
+            batch.set(assignmentsRef, { assignments: {
+                [Category.IT]: ['user-ds-1'],
+                [Category.HR]: ['user-ds-2'],
+                [Category.MAINTENANCE]: ['user-ds-3'],
+                [Category.ACCOUNTS]: ['user-ds-4', 'user-ds-5'],
+            }});
+
+            await batch.commit();
+            console.log("Seeding complete.");
+        }
+    };
+
+    seedData().then(() => {
+        const unsubUsers = db.collection('users').onSnapshot(snapshot => {
+            const usersData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setUsers(usersData);
+            if (!currentUser) {
+              setCurrentUser(usersData[0] || null);
+            }
+            setIsLoading(false);
+        });
+
+        const unsubTickets = db.collection('tickets').orderBy('createdAt', 'desc').onSnapshot(snapshot => {
+            const ticketsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setRawTickets(ticketsData);
+        });
+
+        const unsubAssignments = db.collection('categoryAssignments').doc('assignments').onSnapshot(doc => {
+            setCategoryAssignments(doc.data());
+        });
+
+        return () => {
+            unsubUsers();
+            unsubTickets();
+            unsubAssignments();
+        };
+    });
+  }, []);
+  
+  const populatedTickets = React.useMemo(() => {
+    if (!users.length || !rawTickets.length) {
+        return rawTickets; // Return raw if users not loaded, to avoid blank screen
+    }
+    const userMap = new Map(users.map(u => [u.id, u]));
+
+    const findUser = (id) => userMap.get(id) || null;
+
+    return rawTickets.map(ticket => {
+        return {
+            ...ticket,
+            raisedBy: findUser(ticket.raisedBy),
+            assignedTo: findUser(ticket.assignedTo),
+            assignedClusterManager: findUser(ticket.assignedClusterManager),
+            closureRequestedBy: findUser(ticket.closureRequestedBy),
+            history: (ticket.history || []).map(h => ({
+                ...h,
+                updatedBy: findUser(h.updatedBy),
+            })),
+            comments: (ticket.comments || []).map(c => ({
+                ...c,
+                user: findUser(c.user),
+            })),
+        };
+    });
+  }, [rawTickets, users]);
+
+  const sendEmailNotification = (userId) => {
+    const user = users.find(u => u.id === userId);
+    if (user && user.email) {
+      console.log(`%c--- SIMULATING EMAIL NOTIFICATION ---\nTo: ${user.name} <${user.email}>`, 'background: #f0f9ff; color: #0284c7; padding: 4px;');
     }
   };
 
@@ -1120,192 +1224,177 @@ const App = () => {
     }
   }, [users]);
   
-  const handleResetData = () => {
+  const handleResetData = async () => {
     if (window.confirm('Are you sure you want to reset all data to the original demo state? All your changes will be lost.')) {
-      localStorage.removeItem('retailOps_tickets');
-      localStorage.removeItem('retailOps_users');
-      localStorage.removeItem('retailOps_categoryAssignments');
-      localStorage.removeItem('retailOps_theme');
-      window.location.reload();
+        setIsLoading(true);
+        // Delete all documents in collections
+        const collections = ['tickets', 'users', 'categoryAssignments'];
+        for (const col of collections) {
+            const snapshot = await db.collection(col).get();
+            const batch = db.batch();
+            snapshot.docs.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+        }
+        localStorage.removeItem('retailOps_theme');
+        window.location.reload();
     }
   };
 
   const createUser = (newUserData) => {
-    const newUser = { ...newUserData, id: `user-${Date.now()}` };
-    setUsers(prevUsers => [...prevUsers, newUser]);
+    const id = `user-${Date.now()}`;
+    db.collection('users').doc(id).set({ ...newUserData, id });
   };
   const updateUser = (userId, updates) => {
-    setUsers(prevUsers => prevUsers.map(user => (user.id === userId ? { ...user, ...updates } : user)));
-    if (currentUser.id === userId) {
-      setCurrentUser(prev => ({ ...prev, ...updates }));
-    }
+    db.collection('users').doc(userId).update(updates);
   };
   const deleteUser = (userId) => {
     if (userId === currentUser.id) {
       alert("You cannot delete the currently logged-in user.");
       return;
     }
-    setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
-    setCategoryAssignments(prev => {
-      const newAssignments = { ...prev };
-      Object.keys(newAssignments).forEach(cat => {
-        newAssignments[cat] = newAssignments[cat]?.filter(id => id !== userId);
-      });
-      return newAssignments;
+    db.collection('users').doc(userId).delete();
+    // Also remove user from category assignments
+    Object.keys(Category).forEach(category => {
+        updateCategoryAssignment(category, userId, false);
     });
   };
   const updateCategoryAssignment = (category, userId, isAssigned) => {
-    setCategoryAssignments(prev => {
-      const newAssignments = { ...prev };
-      const currentAssigned = newAssignments[category] || [];
+      const docRef = db.collection('categoryAssignments').doc('assignments');
+      const key = `assignments.${category}`;
       if (isAssigned) {
-        if (!currentAssigned.includes(userId)) {
-          newAssignments[category] = [...currentAssigned, userId];
-        }
+        docRef.update({ [key]: firebase.firestore.FieldValue.arrayUnion(userId) });
       } else {
-        newAssignments[category] = currentAssigned.filter(id => id !== userId);
+        docRef.update({ [key]: firebase.firestore.FieldValue.arrayRemove(userId) });
       }
-      return newAssignments;
-    });
   };
 
   const assignTicketToSelf = (ticketId) => {
-    let updatedTicket;
-    setTickets(prevTickets => prevTickets.map(ticket => {
-      if (ticket.id === ticketId) {
-        const historyEvent = { status: Status.ASSIGNED, timestamp: new Date().toISOString(), updatedBy: currentUser };
-        updatedTicket = { ...ticket, assignedTo: currentUser, status: Status.ASSIGNED, history: [...ticket.history, historyEvent], updatedAt: new Date().toISOString() };
-        return updatedTicket;
-      }
-      return ticket;
-    }));
-    if (updatedTicket) {
-      const subject = `Ticket Claimed: ${updatedTicket.id} - "${updatedTicket.title}"`;
-      const body = `Hello,\n\nTicket ${updatedTicket.id} has been claimed by Department Specialist ${currentUser.name}.\n\nThey will begin working on the issue shortly.`;
-      if (updatedTicket.raisedBy) sendEmailNotification(updatedTicket.raisedBy, subject, body);
-      if (updatedTicket.assignedClusterManager) sendEmailNotification(updatedTicket.assignedClusterManager, subject, body);
-    }
+    const historyEvent = { status: Status.ASSIGNED, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+    db.collection('tickets').doc(ticketId).update({
+        assignedTo: currentUser.id,
+        status: Status.ASSIGNED,
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        updatedAt: new Date().toISOString()
+    });
   };
 
   const assignTicketToSpecialist = (ticketId, specialistId) => {
-    setTickets(prevTickets => prevTickets.map(ticket => {
-      if (ticket.id === ticketId && ticket.assignedTo?.id !== specialistId) {
+    const ticketRef = db.collection('tickets').doc(ticketId);
+    db.runTransaction(async (transaction) => {
+        const ticketDoc = await transaction.get(ticketRef);
+        if (!ticketDoc.exists) throw "Document does not exist!";
+        
+        const currentTicket = ticketDoc.data();
+        if (currentTicket.assignedTo === specialistId) return;
+
+        let newStatus = currentTicket.status;
         const assignee = users.find(u => u.id === specialistId);
-        let newStatus = ticket.status;
+        
         if (assignee) {
-          if (ticket.status === Status.RAISED) newStatus = Status.ASSIGNED;
-          sendEmailNotification(assignee, `You have been assigned to ticket: ${ticket.id}`, `Hello ${assignee.name},\n\nTicket "${ticket.title}" from ${ticket.store} has been assigned to you by ${currentUser.name}.\n\nPlease review the ticket details in the dashboard.`);
+          if (currentTicket.status === Status.RAISED) newStatus = Status.ASSIGNED;
+          sendEmailNotification(specialistId);
         } else {
           newStatus = Status.RAISED;
         }
+
         const historyMessage = assignee ? `Assigned to ${assignee.name} by ${currentUser.name}.` : `Unassigned and returned to team queue by ${currentUser.name}.`;
-        const newComment = { id: `COMMENT-${Date.now()}`, user: currentUser, text: historyMessage, timestamp: new Date().toISOString() };
-        const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser };
-        return { ...ticket, assignedTo: assignee || undefined, status: newStatus, history: [...ticket.history, historyEvent], comments: [...ticket.comments, newComment], updatedAt: new Date().toISOString() };
-      }
-      return ticket;
-    }));
+        const newComment = { id: `COMMENT-${Date.now()}`, user: currentUser.id, text: historyMessage, timestamp: new Date().toISOString() };
+        const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+        
+        transaction.update(ticketRef, {
+            assignedTo: specialistId || null,
+            status: newStatus,
+            history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+            comments: firebase.firestore.FieldValue.arrayUnion(newComment),
+            updatedAt: new Date().toISOString()
+        });
+    });
   };
 
   const getVisibleTickets = React.useMemo(() => {
     if (!currentUser) return [];
     switch (currentUser.role) {
-      case Role.STORE_MANAGER: return tickets.filter(t => t.raisedBy.id === currentUser.id);
-      case Role.CLUSTER_MANAGER: return tickets.filter(t => t.assignedClusterManager?.id === currentUser.id);
+      case Role.STORE_MANAGER: return populatedTickets.filter(t => t.raisedBy?.id === currentUser.id);
+      case Role.CLUSTER_MANAGER: return populatedTickets.filter(t => t.assignedClusterManager?.id === currentUser.id);
       case Role.DEPARTMENT_SPECIALIST:
-        return tickets.filter(ticket => {
+        return populatedTickets.filter(ticket => {
           if (ticket.assignedTo?.id === currentUser.id) return true;
-          const specialistCategories = Object.keys(categoryAssignments).filter(cat => categoryAssignments[cat]?.includes(currentUser.id));
+          const specialistCategories = Object.keys(categoryAssignments?.assignments || {}).filter(cat => categoryAssignments.assignments[cat]?.includes(currentUser.id));
           if (!ticket.assignedTo && specialistCategories.includes(ticket.category)) return true;
           return false;
         });
       case Role.OPERATIONS_HEAD:
-      case Role.ADMIN: return tickets;
+      case Role.ADMIN: return populatedTickets;
       default: return [];
     }
-  }, [currentUser, tickets, categoryAssignments]);
+  }, [currentUser, populatedTickets, categoryAssignments]);
 
   const createTicket = (newTicketData) => {
-    const newTicket = { ...newTicketData, status: Status.RAISED, assignedTo: undefined, history: [{ status: Status.RAISED, timestamp: new Date().toISOString(), updatedBy: currentUser }], comments: [] };
-    setTickets(prevTickets => [newTicket, ...prevTickets]);
-    const { assignedClusterManager, category, title, store } = newTicket;
-    if (assignedClusterManager) {
-      sendEmailNotification(assignedClusterManager, `New Ticket Raised in Your Cluster: ${newTicket.id}`, `Hello ${assignedClusterManager.name},\n\nA new ticket "${title}" has been raised by ${store}.\n\nPlease review it in the dashboard.`);
-    }
-    const specialistsToNotifyIds = categoryAssignments[category] || [];
-    const specialistsToNotify = users.filter(u => specialistsToNotifyIds.includes(u.id));
-    specialistsToNotify.forEach(specialist => {
-      sendEmailNotification(specialist, `New Ticket in Your Category Queue: ${newTicket.id}`, `Hello ${specialist.name},\n\nA new ticket "${title}" for the ${category} category has been raised by ${store} and is in your team's queue.`);
-    });
+    const newTicket = { 
+        ...newTicketData, 
+        status: Status.RAISED, 
+        assignedTo: null, 
+        history: [{ status: Status.RAISED, timestamp: new Date().toISOString(), updatedBy: currentUser.id }], 
+        comments: [] 
+    };
+    db.collection('tickets').doc(newTicket.id).set(newTicket);
+    
+    sendEmailNotification(newTicket.assignedClusterManager);
+    const specialistsToNotifyIds = categoryAssignments?.assignments?.[newTicket.category] || [];
+    specialistsToNotifyIds.forEach(sendEmailNotification);
   };
 
   const updateTicketStatus = (ticketId, newStatus) => {
-    setTickets(prevTickets => prevTickets.map(t => {
-      if (t.id === ticketId) {
-        const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser };
-        return { ...t, status: newStatus, history: [...t.history, historyEvent], updatedAt: new Date().toISOString() };
-      }
-      return t;
-    }));
+    const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+    db.collection('tickets').doc(ticketId).update({
+        status: newStatus,
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        updatedAt: new Date().toISOString()
+    });
   };
   const addComment = (ticketId, commentText) => {
-    const newComment = { id: `COMMENT-${Date.now()}`, user: currentUser, text: commentText, timestamp: new Date().toISOString() };
-    setTickets(prevTickets => prevTickets.map(t => t.id === ticketId ? { ...t, comments: [...t.comments, newComment] } : t));
+    const newComment = { id: `COMMENT-${Date.now()}`, user: currentUser.id, text: commentText, timestamp: new Date().toISOString() };
+    db.collection('tickets').doc(ticketId).update({
+        comments: firebase.firestore.FieldValue.arrayUnion(newComment)
+    });
   };
   const requestTicketClosure = (ticketId) => {
-    setTickets(prevTickets => prevTickets.map(t => {
-      if (t.id === ticketId) {
-        const historyEvent = { status: Status.PENDING_CLOSURE, timestamp: new Date().toISOString(), updatedBy: currentUser };
-        return { ...t, status: Status.PENDING_CLOSURE, closureRequestedBy: currentUser, history: [...t.history, historyEvent], updatedAt: new Date().toISOString() };
-      }
-      return t;
-    }));
+    const historyEvent = { status: Status.PENDING_CLOSURE, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+    db.collection('tickets').doc(ticketId).update({
+        status: Status.PENDING_CLOSURE,
+        closureRequestedBy: currentUser.id,
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        updatedAt: new Date().toISOString()
+    });
   };
   const approveTicketClosure = (ticketId) => {
-    let ticketToNotify;
-    setTickets(prevTickets => prevTickets.map(t => {
-      if (t.id === ticketId) {
-        const historyEvent = { status: Status.CLOSED, timestamp: new Date().toISOString(), updatedBy: currentUser };
-        const updatedTicket = { ...t, status: Status.CLOSED, history: [...t.history, historyEvent], updatedAt: new Date().toISOString() };
-        ticketToNotify = updatedTicket;
-        return updatedTicket;
-      }
-      return t;
-    }));
-    if (ticketToNotify) {
-      const subject = `Ticket Closed: ${ticketToNotify.id} - "${ticketToNotify.title}"`;
-      const body = `Hello,\n\nTicket ${ticketToNotify.id} ("${ticketToNotify.title}") has been reviewed and approved for closure by ${currentUser.name}.`;
-      if (ticketToNotify.raisedBy) sendEmailNotification(ticketToNotify.raisedBy, subject, body);
-      if (ticketToNotify.assignedClusterManager) sendEmailNotification(ticketToNotify.assignedClusterManager, subject, body);
-      if (ticketToNotify.assignedTo) sendEmailNotification(ticketToNotify.assignedTo, subject, body);
-    }
+    const historyEvent = { status: Status.CLOSED, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+    db.collection('tickets').doc(ticketId).update({
+        status: Status.CLOSED,
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        updatedAt: new Date().toISOString()
+    });
   };
   const rejectTicketClosure = (ticketId, reason) => {
-    const newComment = { id: `COMMENT-${Date.now()}`, user: currentUser, text: `Closure Rejected: ${reason}`, timestamp: new Date().toISOString() };
-    let ticketToNotify;
-    setTickets(prevTickets => prevTickets.map(t => {
-      if (t.id === ticketId) {
-        const historyEvent = { status: Status.IN_PROGRESS, timestamp: new Date().toISOString(), updatedBy: currentUser };
-        const updatedTicket = { ...t, status: Status.IN_PROGRESS, comments: [...t.comments, newComment], history: [...t.history, historyEvent], updatedAt: new Date().toISOString(), closureRequestedBy: undefined };
-        ticketToNotify = updatedTicket;
-        return updatedTicket;
-      }
-      return t;
-    }));
-    if (ticketToNotify) {
-      const subject = `Ticket Re-opened: ${ticketToNotify.id} - "${ticketToNotify.title}"`;
-      const body = `Hello,\n\nThe closure request for ticket ${ticketToNotify.id} ("${ticketToNotify.title}") has been rejected by ${currentUser.name}.\n\nReason: ${reason}\n\nThe ticket has been returned to "In Progress" status.`;
-      if (ticketToNotify.raisedBy) sendEmailNotification(ticketToNotify.raisedBy, subject, body);
-      if (ticketToNotify.assignedClusterManager) sendEmailNotification(ticketToNotify.assignedClusterManager, subject, body);
-      if (ticketToNotify.assignedTo) sendEmailNotification(ticketToNotify.assignedTo, subject, body);
-    }
+    const newComment = { id: `COMMENT-${Date.now()}`, user: currentUser.id, text: `Closure Rejected: ${reason}`, timestamp: new Date().toISOString() };
+    const historyEvent = { status: Status.IN_PROGRESS, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+    db.collection('tickets').doc(ticketId).update({
+        status: Status.IN_PROGRESS,
+        comments: firebase.firestore.FieldValue.arrayUnion(newComment),
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        updatedAt: new Date().toISOString(),
+        closureRequestedBy: null
+    });
   };
 
   const generateTicketSummary = async (ticket) => {
     if (!process.env.API_KEY) return "API key not configured.";
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const prompt = `Summarize the following support ticket in 2-3 sentences. Focus on the core issue and the latest status.\n\nTicket ID: ${ticket.id}\nTitle: ${ticket.title}\nRaised by: ${ticket.raisedBy.name}\nStore: ${ticket.store}\nCategory: ${ticket.category}\nStatus: ${ticket.status}\nDescription: ${ticket.description}\n\nComments:\n${ticket.comments.map(c => `- ${c.user.name}: "${c.text}"`).join('\n')}`;
+      const commentsText = (ticket.comments || []).map(c => {
+        return `- ${c.user?.name || 'Unknown'}: "${c.text}"`;
+      }).join('\\n');
+      const prompt = `Summarize the following support ticket in 2-3 sentences. Focus on the core issue and the latest status.\\n\\nTicket ID: ${ticket.id}\\nTitle: ${ticket.title}\\nRaised by: ${ticket.raisedBy?.name}\\nStore: ${ticket.store}\\nCategory: ${ticket.category}\\nStatus: ${ticket.status}\\nDescription: ${ticket.description}\\n\\nComments:\\n${commentsText}`;
       const response = await ai.models.generateContent({ model: 'gemini-2.5-flash', contents: prompt });
       return response.text;
     } catch (error) {
@@ -1315,8 +1404,17 @@ const App = () => {
   };
 
   const contextValue = React.useMemo(() => ({
-    currentUser, changeUser, theme, toggleTheme, handleResetData, tickets: getVisibleTickets, allTickets: tickets, createTicket, updateTicketStatus, addComment, assignTicketToSelf, assignTicketToSpecialist, requestTicketClosure, approveTicketClosure, rejectTicketClosure, generateTicketSummary, users, createUser, updateUser, deleteUser, categoryAssignments, updateCategoryAssignment,
-  }), [currentUser, changeUser, theme, toggleTheme, getVisibleTickets, tickets, addComment, generateTicketSummary, users, categoryAssignments]);
+    currentUser, changeUser, theme, toggleTheme, handleResetData, tickets: getVisibleTickets, allTickets: populatedTickets, createTicket, updateTicketStatus, addComment, assignTicketToSelf, assignTicketToSpecialist, requestTicketClosure, approveTicketClosure, rejectTicketClosure, generateTicketSummary, users, createUser, updateUser, deleteUser, categoryAssignments, updateCategoryAssignment,
+  }), [currentUser, changeUser, theme, toggleTheme, getVisibleTickets, populatedTickets, users, categoryAssignments]);
+  
+  if (isLoading) {
+    return React.createElement('div', { className: "flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900" },
+      React.createElement('div', { className: "flex items-center space-x-2 text-gray-500 dark:text-gray-400" },
+        React.createElement(ArrowPathIcon, { className: "h-6 w-6 animate-spin" }),
+        React.createElement('span', { className: "text-lg font-medium" }, "Connecting to Database...")
+      )
+    );
+  }
 
   const renderActiveView = () => {
     if (!currentUser) {
