@@ -1087,7 +1087,7 @@ const Header = () => {
   };
 
   return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50" },
-    React.createElement('div', { className: "container mx-auto px-4 sm:px-6 lg:px-8" },
+    React.createElement('div', { className: "container mx-auto px-4 sm:px-6 lg:px-1" },
       React.createElement('div', { className: "flex items-center justify-between h-16" },
         React.createElement('div', { className: "flex items-center space-x-4 min-w-0" },
           React.createElement('div', { className: "flex items-center text-primary-600 dark:text-primary-400" },
@@ -1113,8 +1113,8 @@ const Header = () => {
           ) : (
              React.createElement('div', { className: "relative" },
                 React.createElement(UserCircleIcon, { className: "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" }),
-                React.createElement('select', { onChange: handleUserSelect, defaultValue: "", className: "pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-primary-500 focus:border-primary-500" },
-                    React.createElement('option', { value: "", disabled: true }, "CHOOSE THE USER"),
+                React.createElement('select', { onChange: handleUserSelect, defaultValue: "", className: "pl-8 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-primary-500 focus:border-primary-500" },
+                    React.createElement('option', { value: "", disabled: true }, "Choose the User"),
                     users.map(user => React.createElement('option', { key: user.id, value: user.id }, `${user.name} (${user.role})`))
                 )
              )
@@ -1606,7 +1606,7 @@ const App = () => {
 
   const renderActiveView = () => {
     if (!currentUser) {
-       return React.createElement('div', { className: "flex flex-col items-center justify-center text-center h-[calc(100vh-8rem)]" },
+       return React.createElement('div', { className: "flex flex-col items-center justify-center text-center h-[calc(95vh-8rem)]" },
             React.createElement('div', { className: "mb-8" },
                 React.createElement('img', { 
                     src: "https://www.dropbox.com/scl/fi/j24evqxph97hho8vudvdk/Kasam-Connekt.png?rlkey=yn315abazpiof90yqbcruqk9d&raw=1", 
