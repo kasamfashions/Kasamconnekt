@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kasam Connekt</title>
+    <title>Retail Ops Task Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -19,6 +19,8 @@
         }
       }
     </script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -39,6 +41,21 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { GoogleGenAI } from '@google/genai';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+// --- Firebase Initialization ---
+const firebaseConfig = {
+  apiKey: "AIzaSyCSxPL4Fl5ajsMJG8jVcbek-aHEvMclVug",
+  authDomain: "kasam-connekt.firebaseapp.com",
+  projectId: "kasam-connekt",
+  storageBucket: "kasam-connekt.firebasestorage.app",
+  messagingSenderId: "844196020427",
+  appId: "1:844196020427:web:b6b4882a212646bf36db4e",
+  measurementId: "G-CKFC4JWT0X"
+};
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+}
+const storage = firebase.storage();
 
 // --- Inlined Code from all files ---
 
@@ -179,6 +196,12 @@ const XCircleIcon = (props) => (
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" })
   )
 );
+const PaperClipIcon = (props) => (
+    React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+      React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3.375 3.375 0 1118.375 7.625l-10.94 10.94a1.125 1.125 0 11-1.591-1.591l10.94-10.94a3.375 3.375 0 014.773 4.773l-10.94 10.94a1.125 1.125 0 101.591 1.591l7.693-7.693a4.5 4.5 0 00-6.364-6.364l-7.693 7.693" })
+    )
+);
+
 
 // --- constants.ts ---
 const USERS = [
@@ -188,14 +211,14 @@ const USERS = [
   { id: 'user-ops-1', name: 'Olivia Payne', role: Role.OPERATIONS_HEAD },
   { id: 'user-ops-2', name: 'Omar Hughes', role: Role.OPERATIONS_HEAD },
   // Cluster Managers
-  { id: 'user-cm-1', name: 'Charles Miller', role: Role.CLUSTER_MANAGER, cluster: 'North Cluster', email: 'charles.miller@KasamConnekt.com' },
-  { id: 'user-cm-2', name: 'Chloe Davis', role: Role.CLUSTER_MANAGER, cluster: 'South Cluster', email: 'chloe.davis@KasamConnekt.com' },
+  { id: 'user-cm-1', name: 'Charles Miller', role: Role.CLUSTER_MANAGER, cluster: 'North Cluster', email: 'charles.miller@retailops.com' },
+  { id: 'user-cm-2', name: 'Chloe Davis', role: Role.CLUSTER_MANAGER, cluster: 'South Cluster', email: 'chloe.davis@retailops.com' },
   // Department Specialists
-  { id: 'user-ds-1', name: 'John Smith', role: Role.DEPARTMENT_SPECIALIST, email: 'john.smith.it@KasamConnekt.com' }, // IT Specialist
-  { id: 'user-ds-2', name: 'Jane Doe', role: Role.DEPARTMENT_SPECIALIST, email: 'jane.doe.hr@KasamConnekt.com' }, // HR Specialist
-  { id: 'user-ds-3', name: 'Peter Jones', role: Role.DEPARTMENT_SPECIALIST, email: 'peter.jones.maint@KasamConnekt.com' }, // Maintenance Specialist
-  { id: 'user-ds-4', name: 'Mary Williams', role: Role.DEPARTMENT_SPECIALIST, email: 'mary.williams.acc@KasamConnekt.com' }, // Accounts Specialist 1
-  { id: 'user-ds-5', name: 'David Brown', role: Role.DEPARTMENT_SPECIALIST, email: 'david.brown.acc@KasamConnekt.com' }, // Accounts Specialist 2
+  { id: 'user-ds-1', name: 'John Smith', role: Role.DEPARTMENT_SPECIALIST, email: 'john.smith.it@retailops.com' }, // IT Specialist
+  { id: 'user-ds-2', name: 'Jane Doe', role: Role.DEPARTMENT_SPECIALIST, email: 'jane.doe.hr@retailops.com' }, // HR Specialist
+  { id: 'user-ds-3', name: 'Peter Jones', role: Role.DEPARTMENT_SPECIALIST, email: 'peter.jones.maint@retailops.com' }, // Maintenance Specialist
+  { id: 'user-ds-4', name: 'Mary Williams', role: Role.DEPARTMENT_SPECIALIST, email: 'mary.williams.acc@retailops.com' }, // Accounts Specialist 1
+  { id: 'user-ds-5', name: 'David Brown', role: Role.DEPARTMENT_SPECIALIST, email: 'david.brown.acc@retailops.com' }, // Accounts Specialist 2
   // Store Managers
   { id: 'user-sm-1', name: 'Sophie Morgan', role: Role.STORE_MANAGER, store: 'Downtown Central' },
   { id: 'user-sm-2', name: 'Samuel Myers', role: Role.STORE_MANAGER, store: 'Uptown Plaza' },
@@ -208,11 +231,11 @@ const [cm1, cm2] = USERS.filter(u => u.role === Role.CLUSTER_MANAGER);
 const [ds1, ds2, ds3] = USERS.filter(u => u.role === Role.DEPARTMENT_SPECIALIST);
 const [sm1, sm2, sm3, sm4] = USERS.filter(u => u.role === Role.STORE_MANAGER);
 const TICKETS = [
-  { id: 'TICKET-001', title: 'Leaking AC unit in main aisle', description: 'The main air conditioning unit in aisle 5 has been leaking water for the past two hours. It is creating a slipping hazard for customers. We have placed a bucket under it for now but it needs urgent repair.', status: Status.ASSIGNED, category: Category.MAINTENANCE, priority: 'High', raisedBy: sm1, store: 'Downtown Central', assignedTo: ds3, assignedClusterManager: cm1, createdAt: '2023-10-26T09:00:00Z', updatedAt: '2023-10-26T09:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-26T09:00:00Z', updatedBy: sm1 }, { status: Status.ASSIGNED, timestamp: '2023-10-26T09:00:01Z', updatedBy: ds3 }, ], },
-  { id: 'TICKET-002', title: 'POS Terminal 2 is not processing credit cards', description: 'The credit card reader on POS Terminal 2 is declining all cards. Swiping, inserting chip, and tapping all fail. The terminal has been restarted but the issue persists. We are directing all customers to other terminals.', status: Status.IN_PROGRESS, category: Category.IT, priority: 'High', raisedBy: sm2, store: 'Uptown Plaza', assignedTo: ds1, assignedClusterManager: cm1, createdAt: '2023-10-26T10:30:00Z', updatedAt: '2023-10-26T11:00:00Z', comments: [ { id: 'C-001', user: ds1, text: 'I am looking into the issue remotely. Might need to dispatch a tech.', timestamp: '2023-10-26T11:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-26T10:30:00Z', updatedBy: sm2 }, { status: Status.ASSIGNED, timestamp: '2023-10-26T10:30:01Z', updatedBy: ds1 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-26T11:00:00Z', updatedBy: ds1 }, ], },
-  { id: 'TICKET-003', title: 'Request for new cashier training', description: 'We have two new hires starting next week who will be working as cashiers. They need to be scheduled for the standard POS and customer service training.', status: Status.PENDING_CLOSURE, category: Category.HR, priority: 'Medium', raisedBy: sm3, store: 'Westside Mall', assignedTo: ds2, assignedClusterManager: cm2, closureRequestedBy: sm3, createdAt: '2023-10-25T14:00:00Z', updatedAt: '2023-10-26T08:30:00Z', comments: [ { id: 'C-003', user: ds2, text: 'Training scheduled for Tuesday. All materials sent.', timestamp: '2023-10-26T08:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-25T14:00:00Z', updatedBy: sm3 }, { status: Status.ASSIGNED, timestamp: '2023-10-25T14:00:01Z', updatedBy: ds2 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-25T15:00:00Z', updatedBy: ds2 }, { status: Status.COMPLETED, timestamp: '2023-10-26T08:00:00Z', updatedBy: ds2 }, { status: Status.PENDING_CLOSURE, timestamp: '2023-10-26T08:30:00Z', updatedBy: sm3 } ], },
-  { id: 'TICKET-004', title: 'Invoice #5678 discrepancy', description: 'We received invoice #5678 from our vendor, but the amount is higher than quoted. Please investigate.', status: Status.RAISED, category: Category.ACCOUNTS, priority: 'Medium', raisedBy: sm4, store: 'Eastside Market', assignedTo: undefined, assignedClusterManager: cm2, createdAt: '2023-10-24T11:00:00Z', updatedAt: '2023-10-25T16:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-24T11:00:00Z', updatedBy: sm4 }, ], },
-  { id: 'TICKET-005', title: 'Broken shelf in the beverage aisle', description: 'A customer accidentally knocked over a display, and one of the shelves in the beverage aisle is now broken and unsafe. The area has been cordoned off.', status: Status.CLOSED, category: Category.MAINTENANCE, priority: 'High', raisedBy: sm1, store: 'Downtown Central', assignedTo: ds3, assignedClusterManager: cm1, createdAt: '2023-10-23T18:00:00Z', updatedAt: '2023-10-24T14:00:00Z', comments: [ { id: 'C-004', user: ds3, text: 'Maintenance team fixed the shelf and the area is clear now.', timestamp: '2023-10-24T13:30:00Z'}, { id: 'C-005', user: ops1, text: 'Reviewed and closed.', timestamp: '2023-10-24T14:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-23T18:00:00Z', updatedBy: sm1 }, { status: Status.ASSIGNED, timestamp: '2023-10-23T18:00:01Z', updatedBy: ds3 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-24T10:00:00Z', updatedBy: ds3 }, { status: Status.COMPLETED, timestamp: '2023-10-24T13:30:00Z', updatedBy: ds3 }, { status: Status.CLOSED, timestamp: '2023-10-24T14:00:00Z', updatedBy: ops1 } ], },
+  { id: 'TICKET-001', title: 'Leaking AC unit in main aisle', description: 'The main air conditioning unit in aisle 5 has been leaking water for the past two hours. It is creating a slipping hazard for customers. We have placed a bucket under it for now but it needs urgent repair.', status: Status.ASSIGNED, category: Category.MAINTENANCE, priority: 'High', raisedBy: sm1, store: 'Downtown Central', assignedTo: ds3, assignedClusterManager: cm1, createdAt: '2023-10-26T09:00:00Z', updatedAt: '2023-10-26T09:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-26T09:00:00Z', updatedBy: sm1 }, { status: Status.ASSIGNED, timestamp: '2023-10-26T09:00:01Z', updatedBy: ds3 }, ], fileAttachments: [] },
+  { id: 'TICKET-002', title: 'POS Terminal 2 is not processing credit cards', description: 'The credit card reader on POS Terminal 2 is declining all cards. Swiping, inserting chip, and tapping all fail. The terminal has been restarted but the issue persists. We are directing all customers to other terminals.', status: Status.IN_PROGRESS, category: Category.IT, priority: 'High', raisedBy: sm2, store: 'Uptown Plaza', assignedTo: ds1, assignedClusterManager: cm1, createdAt: '2023-10-26T10:30:00Z', updatedAt: '2023-10-26T11:00:00Z', comments: [ { id: 'C-001', user: ds1, text: 'I am looking into the issue remotely. Might need to dispatch a tech.', timestamp: '2023-10-26T11:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-26T10:30:00Z', updatedBy: sm2 }, { status: Status.ASSIGNED, timestamp: '2023-10-26T10:30:01Z', updatedBy: ds1 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-26T11:00:00Z', updatedBy: ds1 }, ], fileAttachments: [] },
+  { id: 'TICKET-003', title: 'Request for new cashier training', description: 'We have two new hires starting next week who will be working as cashiers. They need to be scheduled for the standard POS and customer service training.', status: Status.PENDING_CLOSURE, category: Category.HR, priority: 'Medium', raisedBy: sm3, store: 'Westside Mall', assignedTo: ds2, assignedClusterManager: cm2, closureRequestedBy: sm3, createdAt: '2023-10-25T14:00:00Z', updatedAt: '2023-10-26T08:30:00Z', comments: [ { id: 'C-003', user: ds2, text: 'Training scheduled for Tuesday. All materials sent.', timestamp: '2023-10-26T08:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-25T14:00:00Z', updatedBy: sm3 }, { status: Status.ASSIGNED, timestamp: '2023-10-25T14:00:01Z', updatedBy: ds2 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-25T15:00:00Z', updatedBy: ds2 }, { status: Status.COMPLETED, timestamp: '2023-10-26T08:00:00Z', updatedBy: ds2 }, { status: Status.PENDING_CLOSURE, timestamp: '2023-10-26T08:30:00Z', updatedBy: sm3 } ], fileAttachments: [] },
+  { id: 'TICKET-004', title: 'Invoice #5678 discrepancy', description: 'We received invoice #5678 from our vendor, but the amount is higher than quoted. Please investigate.', status: Status.RAISED, category: Category.ACCOUNTS, priority: 'Medium', raisedBy: sm4, store: 'Eastside Market', assignedTo: undefined, assignedClusterManager: cm2, createdAt: '2023-10-24T11:00:00Z', updatedAt: '2023-10-25T16:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-24T11:00:00Z', updatedBy: sm4 }, ], fileAttachments: [] },
+  { id: 'TICKET-005', title: 'Broken shelf in the beverage aisle', description: 'A customer accidentally knocked over a display, and one of the shelves in the beverage aisle is now broken and unsafe. The area has been cordoned off.', status: Status.CLOSED, category: Category.MAINTENANCE, priority: 'High', raisedBy: sm1, store: 'Downtown Central', assignedTo: ds3, assignedClusterManager: cm1, createdAt: '2023-10-23T18:00:00Z', updatedAt: '2023-10-24T14:00:00Z', comments: [ { id: 'C-004', user: ds3, text: 'Maintenance team fixed the shelf and the area is clear now.', timestamp: '2023-10-24T13:30:00Z'}, { id: 'C-005', user: ops1, text: 'Reviewed and closed.', timestamp: '2023-10-24T14:00:00Z'} ], history: [ { status: Status.RAISED, timestamp: '2023-10-23T18:00:00Z', updatedBy: sm1 }, { status: Status.ASSIGNED, timestamp: '2023-10-23T18:00:01Z', updatedBy: ds3 }, { status: Status.IN_PROGRESS, timestamp: '2023-10-24T10:00:00Z', updatedBy: ds3 }, { status: Status.COMPLETED, timestamp: '2023-10-24T13:30:00Z', updatedBy: ds3 }, { status: Status.CLOSED, timestamp: '2023-10-24T14:00:00Z', updatedBy: ops1 } ], fileAttachments: [] },
 ];
 
 // --- contexts/AppContext.ts ---
@@ -297,7 +320,7 @@ const UserModal = ({ isOpen, onClose, userToEdit }) => {
             React.createElement('input', { type: "email", id: "email", value: email, onChange: e => setEmail(e.target.value), placeholder: "user@example.com", required: rolesWithEmail.includes(role), className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
           ),
           role === Role.STORE_MANAGER && React.createElement('div', null,
-            React.createElement('label', { htmlFor: "store", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Store location"),
+            React.createElement('label', { htmlFor: "store", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Store Name"),
             React.createElement('input', { type: "text", id: "store", value: store, onChange: e => setStore(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
           ),
           role === Role.CLUSTER_MANAGER && React.createElement('div', null,
@@ -523,25 +546,73 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
   const [category, setCategory] = React.useState(Category.MAINTENANCE);
   const [priority, setPriority] = React.useState('Medium');
   const [clusterManagerId, setClusterManagerId] = React.useState('');
+  const [files, setFiles] = React.useState([]);
+  const [isUploading, setIsUploading] = React.useState(false);
+
   const clusterManagers = React.useMemo(() => (context?.users || []).filter(u => u.role === Role.CLUSTER_MANAGER), [context?.users]);
 
+  const resetState = React.useCallback(() => {
+    setTitle('');
+    setDescription('');
+    setCategory(Category.MAINTENANCE);
+    setPriority('Medium');
+    setClusterManagerId(clusterManagers.length > 0 ? clusterManagers[0].id : '');
+    setFiles([]);
+    setIsUploading(false);
+  }, [clusterManagers]);
+
   React.useEffect(() => {
-    if (isOpen && clusterManagers.length > 0 && !clusterManagerId) {
-      setClusterManagerId(clusterManagers[0].id);
+    if (isOpen) {
+        resetState();
     }
-  }, [isOpen, clusterManagers, clusterManagerId]);
+  }, [isOpen, resetState]);
+
 
   if (!context || !isOpen) return null;
   const { currentUser, createTicket, users } = context;
 
-  const handleSubmit = (e) => {
+  const handleFileChange = (e) => {
+    if (e.target.files) {
+        setFiles(Array.from(e.target.files));
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const assignedClusterManager = users.find(u => u.id === clusterManagerId);
     if (!title || !description || !currentUser.store || !assignedClusterManager) {
       alert('Please fill all fields and select a cluster manager.');
       return;
     }
+
+    setIsUploading(true);
+
+    const ticketId = `TICKET-${String(Date.now()).slice(-4)}`;
+    let fileAttachments = [];
+
+    if (files.length > 0) {
+        try {
+            const uploadPromises = files.map(file => {
+                const storageRef = storage.ref(`attachments/${ticketId}/${file.name}`);
+                return storageRef.put(file).then(snapshot => snapshot.ref.getDownloadURL());
+            });
+            
+            const downloadUrls = await Promise.all(uploadPromises);
+
+            fileAttachments = files.map((file, index) => ({
+                name: file.name,
+                url: downloadUrls[index],
+            }));
+        } catch(error) {
+            console.error("Error uploading files:", error);
+            alert("There was an error uploading files. Please try again.");
+            setIsUploading(false);
+            return;
+        }
+    }
+
     createTicket({
+      id: ticketId,
       title,
       description,
       category,
@@ -551,12 +622,10 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
       assignedClusterManager: assignedClusterManager,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      fileAttachments,
     });
-    setTitle('');
-    setDescription('');
-    setCategory(Category.MAINTENANCE);
-    setPriority('Medium');
-    setClusterManagerId('');
+    
+    resetState();
     onClose();
   };
 
@@ -564,7 +633,7 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
     React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg", onClick: e => e.stopPropagation() },
       React.createElement('header', { className: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" },
         React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, "Raise a New Ticket"),
-        React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600" }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
+        React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600", disabled: isUploading }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
       ),
       React.createElement('form', { onSubmit: handleSubmit },
         React.createElement('main', { className: "p-6 space-y-4" },
@@ -596,12 +665,19 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
           ),
           React.createElement('div', null,
             React.createElement('label', { htmlFor: "description", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Description"),
-            React.createElement('textarea', { id: "description", rows: 5, value: description, onChange: e => setDescription(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
+            React.createElement('textarea', { id: "description", rows: 4, value: description, onChange: e => setDescription(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
+          ),
+          React.createElement('div', null,
+            React.createElement('label', { htmlFor: "attachments", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Attachments"),
+            React.createElement('input', { type: "file", id: "attachments", multiple: true, onChange: handleFileChange, className: "mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 dark:file:bg-primary-800 file:text-primary-700 dark:file:text-primary-200 hover:file:bg-primary-100 dark:hover:file:bg-primary-700" }),
+            files.length > 0 && React.createElement('ul', { className: "mt-2 text-sm text-gray-500 dark:text-gray-400 list-disc pl-5" },
+                files.map((file, index) => React.createElement('li', { key: index }, file.name))
+            )
           )
         ),
         React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
-          React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Cancel"),
-          React.createElement('button', { type: "submit", className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" }, "Submit Ticket")
+          React.createElement('button', { type: "button", onClick: onClose, disabled: isUploading, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500 disabled:opacity-50" }, "Cancel"),
+          React.createElement('button', { type: "submit", disabled: isUploading, className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:bg-primary-400 disabled:cursor-not-allowed" }, isUploading ? 'Uploading...' : 'Submit Ticket')
         )
       )
     )
@@ -723,6 +799,11 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
           React.createElement('div', { className: "space-y-2" },
             React.createElement('h4', { className: "text-sm font-medium text-gray-500 dark:text-gray-400" }, "Description"),
             React.createElement('p', { className: "text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap" }, ticket.description)
+          ),
+          ticket.fileAttachments && ticket.fileAttachments.length > 0 && React.createElement('div', { className: "space-y-2" },
+            renderDetailItem(PaperClipIcon, "Attachments", React.createElement('ul', { className: "mt-1 space-y-1" },
+              ticket.fileAttachments.map(file => React.createElement('li', { key: file.url }, React.createElement('a', { href: file.url, target: "_blank", rel: "noopener noreferrer", className: "text-primary-600 dark:text-primary-400 hover:underline" }, file.name)))
+            ))
           ),
           React.createElement('div', { className: "space-y-2" },
             React.createElement('button', { onClick: handleGenerateSummary, disabled: isSummarizing, className: "inline-flex items-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline disabled:opacity-50 disabled:cursor-not-allowed" },
@@ -947,7 +1028,7 @@ const Header = ({ activeView, setActiveView }) => {
         React.createElement('div', { className: "flex items-center space-x-4" },
           React.createElement('div', { className: "flex items-center text-primary-600 dark:text-primary-400" },
             React.createElement(BuildingStorefrontIcon, { className: "h-8 w-8" }),
-            React.createElement('span', { className: "ml-2 text-xl font-bold" }, "Kasam Connekt")
+            React.createElement('span', { className: "ml-2 text-xl font-bold" }, "RetailOps")
           ),
           currentUser.role === Role.ADMIN && React.createElement('nav', { className: "hidden md:flex items-center space-x-2" },
             React.createElement('button', { onClick: () => setActiveView('dashboard'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
@@ -989,9 +1070,9 @@ const getInitialState = (key, defaultValue) => {
 };
 
 const App = () => {
-  const [users, setUsers] = React.useState(() => getInitialState('KasamConnekt_users', USERS));
-  const [tickets, setTickets] = React.useState(() => getInitialState('KasamConnekt_tickets', TICKETS));
-  const [categoryAssignments, setCategoryAssignments] = React.useState(() => getInitialState('KasamConnekt_categoryAssignments', {
+  const [users, setUsers] = React.useState(() => getInitialState('retailOps_users', USERS));
+  const [tickets, setTickets] = React.useState(() => getInitialState('retailOps_tickets', TICKETS));
+  const [categoryAssignments, setCategoryAssignments] = React.useState(() => getInitialState('retailOps_categoryAssignments', {
     [Category.IT]: ['user-ds-1'],
     [Category.HR]: ['user-ds-2'],
     [Category.MAINTENANCE]: ['user-ds-3'],
@@ -999,24 +1080,24 @@ const App = () => {
   }));
 
   const [currentUser, setCurrentUser] = React.useState(() => {
-    const savedUsers = getInitialState('KasamConnekt_users', USERS);
+    const savedUsers = getInitialState('retailOps_users', USERS);
     return savedUsers[0] || null;
   });
 
-  const [theme, setTheme] = React.useState(() => getInitialState('KasamConnekt_theme', 'light'));
+  const [theme, setTheme] = React.useState(() => getInitialState('retailOps_theme', 'light'));
   const [activeView, setActiveView] = React.useState('dashboard');
   
   React.useEffect(() => {
-    localStorage.setItem('KasamConnekt_users', JSON.stringify(users));
+    localStorage.setItem('retailOps_users', JSON.stringify(users));
   }, [users]);
   React.useEffect(() => {
-    localStorage.setItem('KasamConnekt_tickets', JSON.stringify(tickets));
+    localStorage.setItem('retailOps_tickets', JSON.stringify(tickets));
   }, [tickets]);
   React.useEffect(() => {
-    localStorage.setItem('KasamConnekt_categoryAssignments', JSON.stringify(categoryAssignments));
+    localStorage.setItem('retailOps_categoryAssignments', JSON.stringify(categoryAssignments));
   }, [categoryAssignments]);
   React.useEffect(() => {
-    localStorage.setItem('KasamConnekt_theme', theme);
+    localStorage.setItem('retailOps_theme', theme);
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -1041,10 +1122,10 @@ const App = () => {
   
   const handleResetData = () => {
     if (window.confirm('Are you sure you want to reset all data to the original demo state? All your changes will be lost.')) {
-      localStorage.removeItem('KasamConnekt_tickets');
-      localStorage.removeItem('KasamConnekt_users');
-      localStorage.removeItem('KasamConnekt_categoryAssignments');
-      localStorage.removeItem('KasamConnekt_theme');
+      localStorage.removeItem('retailOps_tickets');
+      localStorage.removeItem('retailOps_users');
+      localStorage.removeItem('retailOps_categoryAssignments');
+      localStorage.removeItem('retailOps_theme');
       window.location.reload();
     }
   };
@@ -1145,7 +1226,7 @@ const App = () => {
   }, [currentUser, tickets, categoryAssignments]);
 
   const createTicket = (newTicketData) => {
-    const newTicket = { ...newTicketData, id: `TICKET-${String(Date.now()).slice(-4)}`, status: Status.RAISED, assignedTo: undefined, history: [{ status: Status.RAISED, timestamp: new Date().toISOString(), updatedBy: currentUser }], comments: [] };
+    const newTicket = { ...newTicketData, status: Status.RAISED, assignedTo: undefined, history: [{ status: Status.RAISED, timestamp: new Date().toISOString(), updatedBy: currentUser }], comments: [] };
     setTickets(prevTickets => [newTicket, ...prevTickets]);
     const { assignedClusterManager, category, title, store } = newTicket;
     if (assignedClusterManager) {
@@ -1272,4 +1353,3 @@ if (rootElement) {
     </script>
   </body>
 </html>
-
