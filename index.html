@@ -215,8 +215,13 @@ const ArrowLeftOnRectangleIcon = (props) => (
 );
 const SwitchHorizontalIcon = (props) => (
     React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
-        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M7.5 21L3 16.5m0 0L7.5 12M3 16.5h18m-7.5-12L21 9m0 0L15.5 5.5M21 9H3" })
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M7.5 21L3 16.5m0 0L7.5 12M3 16.5h18m-7.5-12L21 9m0 0L14 4.5M21 9H3" })
     )
+);
+const InformationCircleIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" })
+  )
 );
 
 
@@ -1143,18 +1148,23 @@ const Header = () => {
   const context = React.useContext(AppContext);
   const [isSwitchAppOpen, setSwitchAppOpen] = React.useState(false);
   const switchAppRef = React.useRef(null);
+  const [isSupportOpen, setSupportOpen] = React.useState(false);
+  const supportRef = React.useRef(null);
   
   React.useEffect(() => {
     const handleClickOutside = (event) => {
         if (switchAppRef.current && !switchAppRef.current.contains(event.target)) {
             setSwitchAppOpen(false);
         }
+        if (supportRef.current && !supportRef.current.contains(event.target)) {
+            setSupportOpen(false);
+        }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
         document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [switchAppRef]);
+  }, [switchAppRef, supportRef]);
 
   if (!context) return null;
   const { currentUser, theme, toggleTheme, users, setActiveView, activeView, openLoginModal, logout, setCurrentApplication, appPermissions } = context;
@@ -1175,9 +1185,9 @@ const Header = () => {
     return Object.keys(SWITCHABLE_APPS).filter(appId => appPermissions[appId]?.includes(currentUser.id));
   }, [currentUser, appPermissions]);
 
-  return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-md sticky top-0 z-50" },
+  return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-md z-50" },
     React.createElement('div', { className: "container mx-auto px-4 sm:px-6 lg:px-1" },
-      React.createElement('div', { className: "flex items-center justify-between h-16" },
+      React.createElement('div', { className: "flex items-center justify-between py-4" },
         React.createElement('div', { className: "flex items-center space-x-4 min-w-0" },
           React.createElement('div', { className: "flex items-center text-primary-600 dark:text-primary-400" },
             React.createElement('img', { src: "https://www.dropbox.com/scl/fi/3w8cuktwjostzrb21pafw/LOGO-2.png?rlkey=crkvpkwg128csjf52s565avoa&st=aaqqxf4n&raw=1",alt: "Kasam ConneKT Logo", className: "h-8 flex-shrink-0" }),
@@ -1235,6 +1245,19 @@ const Header = () => {
           ),
           React.createElement('button', { onClick: toggleTheme, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Toggle Theme" },
             theme === 'light' ? React.createElement(MoonIcon, { className: "h-6 w-6" }) : React.createElement(SunIcon, { className: "h-6 w-6" })
+          ),
+          React.createElement('div', { className: "relative", ref: supportRef },
+              React.createElement('button', { onClick: () => setSupportOpen(prev => !prev), className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Support" },
+                  React.createElement(InformationCircleIcon, { className: "h-6 w-6" })
+              ),
+              isSupportOpen && React.createElement('div', { className: "origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" },
+                  React.createElement('div', { className: "p-4" },
+                      React.createElement('p', { className: "text-sm font-semibold text-gray-900 dark:text-white" }, "Developed by"),
+                      React.createElement('p', { className: "text-sm text-gray-600 dark:text-gray-300" }, "Kasam Fashions Accounts Dept."),
+                      React.createElement('p', { className: "text-sm font-semibold text-gray-900 dark:text-white mt-3" }, "Contact Support"),
+                      React.createElement('a', { href: "mailto:support@kasamfashions.com", className: "text-sm text-primary-600 dark:text-primary-400 hover:underline" }, "accounts@kasamfashions.com")
+                  )
+              )
           )
         )
       )
@@ -1806,7 +1829,3 @@ if (rootElement) {
     </script>
   </body>
 </html>
-
-
-
-
