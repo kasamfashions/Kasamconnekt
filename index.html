@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -354,7 +353,7 @@ const UserModal = ({ isOpen, onClose, userToEdit }) => {
       React.createElement('form', { onSubmit: handleSubmit },
         React.createElement('main', { className: "p-6 space-y-4" },
           React.createElement('div', null,
-            React.createElement('label', { htmlFor: "name", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Full Name"),
+            React.createElement('label', { htmlFor: "name", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Full Name (Username)"),
             React.createElement('input', { type: "text", id: "name", value: name, onChange: e => setName(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
           ),
            React.createElement('div', null,
@@ -401,7 +400,7 @@ const UserManagement = () => {
     return (context?.users || []).filter(user => user.role === Role.DEPARTMENT_SPECIALIST);
   }, [context?.users]);
   
-  const { users, deleteUser, categoryAssignments, updateCategoryAssignment, appPermissions, updateAppPermission } = context;
+  const { users, deleteUser, categoryAssignments, updateCategoryAssignment, appPermissions, updateAppPermission, resetUserPassword } = context;
   
   const handleOpenModal = (user = null) => {
     setEditingUser(user);
@@ -415,6 +414,12 @@ const UserManagement = () => {
     if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       deleteUser(userId);
     }
+  };
+
+  const handleResetPassword = (userId, userName) => {
+      if (window.confirm(`Are you sure you want to reset the password for ${userName}? The new password will be 'password'.`)) {
+        resetUserPassword(userId);
+      }
   };
 
   return React.createElement(React.Fragment, null,
@@ -436,7 +441,7 @@ const UserManagement = () => {
                 React.createElement('tr', null,
                   React.createElement('th', { scope: "col", className: "px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" }, "Name"),
                   React.createElement('th', { scope: "col", className: "px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" }, "Role"),
-                  React.createElement('th', { scope: "col", className: "px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" }, "Assignment (Store/Cluster)"),
+                  React.createElement('th', { scope: "col", className: "px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" }, "Assignment"),
                   React.createElement('th', { scope: "col", className: "relative px-6 py-3" }, React.createElement('span', { className: "sr-only" }, "Actions"))
                 )
               ),
@@ -449,7 +454,8 @@ const UserManagement = () => {
                   React.createElement('td', { className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" }, user.role),
                   React.createElement('td', { className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" }, user.store || user.cluster || 'N/A'),
                   React.createElement('td', { className: "px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2" },
-                    React.createElement('button', { onClick: () => handleOpenModal(user), className: "text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-200 p-1", title: "Edit User / Change Password" }, React.createElement(PencilIcon, { className: "h-5 w-5" })),
+                    React.createElement('button', { onClick: () => handleResetPassword(user.id, user.name), className: "text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200 p-1", title: "Reset Password" }, React.createElement(KeyIcon, { className: "h-5 w-5" })),
+                    React.createElement('button', { onClick: () => handleOpenModal(user), className: "text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-200 p-1", title: "Edit User" }, React.createElement(PencilIcon, { className: "h-5 w-5" })),
                     React.createElement('button', { onClick: () => handleDeleteUser(user.id), className: "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200 p-1", title: "Delete User" }, React.createElement(TrashIcon, { className: "h-5 w-5" }))
                   )
                 )) : React.createElement('tr', null,
@@ -556,7 +562,8 @@ const AdminAnalytics = () => {
       if (cm.cluster) clusterCounts[cm.cluster] = { total: 0, closed: 0 };
     });
     (context?.allTickets || []).forEach(ticket => {
-      const clusterName = ticket.assignedClusterManager?.cluster;
+      const clusterManager = context.users.find(u => u.id === ticket.assignedClusterManager);
+      const clusterName = clusterManager?.cluster;
       if (clusterName && clusterCounts[clusterName]) {
         clusterCounts[clusterName].total++;
         if (ticket.status === Status.CLOSED) {
@@ -1143,182 +1150,120 @@ const Dashboard = () => {
   );
 };
 
-// --- components/Header.tsx ---
-const Header = () => {
-  const context = React.useContext(AppContext);
-  const [isSwitchAppOpen, setSwitchAppOpen] = React.useState(false);
-  const switchAppRef = React.useRef(null);
-  const [isSupportOpen, setSupportOpen] = React.useState(false);
-  const supportRef = React.useRef(null);
-  
-  React.useEffect(() => {
-    const handleClickOutside = (event) => {
-        if (switchAppRef.current && !switchAppRef.current.contains(event.target)) {
-            setSwitchAppOpen(false);
-        }
-        if (supportRef.current && !supportRef.current.contains(event.target)) {
-            setSupportOpen(false);
-        }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [switchAppRef, supportRef]);
-
-  if (!context) return null;
-  const { currentUser, theme, toggleTheme, users, setActiveView, activeView, openLoginModal, logout, setCurrentApplication, appPermissions } = context;
-
-  const handleUserSelect = (e) => {
-    const userId = e.target.value;
-    if (userId) {
-        const userToLogin = users.find(u => u.id === userId);
-        if (userToLogin) {
-            openLoginModal(userToLogin);
-        }
-    }
-    e.target.value = ''; // Reset dropdown after selection
-  };
-  
-  const accessibleApps = React.useMemo(() => {
-    if (!currentUser || !appPermissions) return [];
-    return Object.keys(SWITCHABLE_APPS).filter(appId => appPermissions[appId]?.includes(currentUser.id));
-  }, [currentUser, appPermissions]);
-
-  return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-md z-50" },
-    React.createElement('div', { className: "container mx-auto px-4 sm:px-6 lg:px-1" },
-      React.createElement('div', { className: "flex items-center justify-between py-4" },
-        React.createElement('div', { className: "flex items-center space-x-4 min-w-0" },
-          React.createElement('div', { className: "flex items-center text-primary-600 dark:text-primary-400" },
-            React.createElement('img', { src: "https://www.dropbox.com/scl/fi/3w8cuktwjostzrb21pafw/LOGO-2.png?rlkey=crkvpkwg128csjf52s565avoa&st=aaqqxf4n&raw=1",alt: "Kasam ConneKT Logo", className: "h-8 flex-shrink-0" }),
-            React.createElement('span', { className: "ml-2 text-xl font-bold whitespace-nowrap truncate" }, "Kasam Connekt")
-          ),
-          currentUser && currentUser.role === Role.ADMIN && React.createElement('nav', { className: "hidden md:flex items-center space-x-2" },
-            React.createElement('button', { onClick: () => setActiveView('dashboard'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
-              React.createElement(TicketIcon, { className: "h-5 w-5 mr-2" }), "Dashboard"),
-            React.createElement('button', { onClick: () => setActiveView('analytics'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'analytics' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
-              React.createElement(ChartBarIcon, { className: "h-5 w-5 mr-2" }), "Analytics"),
-            React.createElement('button', { onClick: () => setActiveView('userManagement'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'userManagement' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
-              React.createElement(UsersIcon, { className: "h-5 w-5 mr-2" }), "Users")
-          )
-        ),
-        React.createElement('div', { className: "flex items-center space-x-2" },
-          currentUser ? (
-            React.createElement('div', { className: "flex items-center space-x-2" },
-                React.createElement('span', { className: "hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-200" }, `Welcome, ${currentUser.name}`),
-                
-                React.createElement('div', { className: "relative", ref: switchAppRef },
-                    React.createElement('button', { onClick: () => setSwitchAppOpen(prev => !prev), className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Switch App" },
-                      React.createElement(SwitchHorizontalIcon, { className: "h-6 w-6" })
-                    ),
-                    isSwitchAppOpen && React.createElement('div', { className: "origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" },
-                        React.createElement('div', { className: "py-1", role: "menu", "aria-orientation": "vertical", "aria-labelledby": "options-menu" },
-                            React.createElement('button', { 
-                                onClick: () => { setActiveView('dashboard'); setCurrentApplication('e-ticket'); setSwitchAppOpen(false); }, 
-                                className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700", 
-                                role: "menuitem" 
-                            }, React.createElement(TicketIcon, { className: "h-5 w-5 mr-3" }), 'E-Ticket Dashboard'),
-                            accessibleApps.map(appId => {
-                                const app = SWITCHABLE_APPS[appId];
-                                return React.createElement('button', {
-                                    key: appId,
-                                    onClick: () => { setCurrentApplication(appId); setSwitchAppOpen(false); },
-                                    className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700",
-                                    role: "menuitem"
-                                }, React.createElement(app.icon, { className: "h-5 w-5 mr-3" }), app.name)
-                            })
-                        )
-                    )
-                ),
-                
-                React.createElement('button', { onClick: logout, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Logout" }, 
-                    React.createElement(ArrowLeftOnRectangleIcon, { className: "h-6 w-6" }))
-            )
-          ) : (
-             React.createElement('div', { className: "relative" },
-                React.createElement(UserCircleIcon, { className: "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" }),
-                React.createElement('select', { onChange: handleUserSelect, defaultValue: "", className: "w-56 pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-sm focus:ring-primary-500 focus:border-primary-500" },
-                    React.createElement('option', { value: "", disabled: true }, "Choose User to Login"),
-                    users.map(user => React.createElement('option', { key: user.id, value: user.id }, `${user.name} (${user.role})`))
-                )
-             )
-          ),
-          React.createElement('button', { onClick: toggleTheme, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Toggle Theme" },
-            theme === 'light' ? React.createElement(MoonIcon, { className: "h-6 w-6" }) : React.createElement(SunIcon, { className: "h-6 w-6" })
-          ),
-          React.createElement('div', { className: "relative", ref: supportRef },
-              React.createElement('button', { onClick: () => setSupportOpen(prev => !prev), className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Support" },
-                  React.createElement(InformationCircleIcon, { className: "h-6 w-6" })
-              ),
-              isSupportOpen && React.createElement('div', { className: "origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" },
-                  React.createElement('div', { className: "p-4" },
-                      React.createElement('p', { className: "text-sm font-semibold text-gray-900 dark:text-white" }, "Developed by"),
-                      React.createElement('p', { className: "text-sm text-gray-600 dark:text-gray-300" }, "Kasam Fashions Accounts Dept."),
-                      React.createElement('p', { className: "text-sm font-semibold text-gray-900 dark:text-white mt-3" }, "Contact Support"),
-                      React.createElement('a', { href: "mailto:support@kasamfashions.com", className: "text-sm text-primary-600 dark:text-primary-400 hover:underline" }, "accounts@kasamfashions.com")
-                  )
-              )
-          )
-        )
-      )
-    )
-  );
-};
-
-
 // --- components/LoginModal.tsx ---
-const LoginModal = ({ isOpen, onClose, user, onLogin }) => {
-    const [email, setEmail] = React.useState('');
+const LoginModal = ({ isOpen, onClose, onLogin, onForgotPassword }) => {
+    const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [error, setError] = React.useState('');
     const [isLoggingIn, setIsLoggingIn] = React.useState(false);
-    const isAdminLogin = user?.role === Role.ADMIN;
 
     React.useEffect(() => {
-        if (isOpen && user) {
-            setError('');
-            setEmail(user.email || '');
+        if (isOpen) {
+            setUsername('');
             setPassword('');
+            setError('');
             setIsLoggingIn(false);
         }
-    }, [isOpen, user]);
+    }, [isOpen]);
 
-    if (!isOpen || !user) return null;
+    if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setIsLoggingIn(true);
-        const success = onLogin(user, isAdminLogin ? email : user.email, password);
-        if (success) {
-            onClose();
-        } else {
-            setError("Invalid credentials. Please try again.");
+        const success = await onLogin(username, password);
+        if (!success) {
+            setError("Invalid username or password. Please try again.");
             setIsLoggingIn(false);
         }
+        // On success, the App component will close the modal
     };
     
     return React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
       React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm", onClick: e => e.stopPropagation() },
         React.createElement('header', { className: "flex flex-col items-center justify-center p-6 border-b border-gray-200 dark:border-gray-700 text-center" },
-          React.createElement(UserCircleIcon, { className: "h-16 w-16 text-gray-400" }),
-          React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white mt-4" }, user.name),
-          React.createElement('p', { className: "text-sm text-gray-500 dark:text-gray-400" }, user.role)
+          React.createElement(KeyIcon, { className: "h-12 w-12 text-primary-500" }),
+          React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white mt-4" }, "Login to Kasam Connekt")
         ),
         React.createElement('form', { onSubmit: handleSubmit },
           React.createElement('main', { className: "p-6 space-y-4" },
-            isAdminLogin && React.createElement('div', null,
-              React.createElement('label', { htmlFor: "email", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Email"),
-              React.createElement('input', { type: "email", id: "email", value: email, onChange: e => setEmail(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
+            React.createElement('div', null,
+              React.createElement('label', { htmlFor: "login-username", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Username"),
+              React.createElement('input', { type: "text", id: "login-username", value: username, onChange: e => setUsername(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
             ),
             React.createElement('div', null,
-              React.createElement('label', { htmlFor: "password", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Password"),
-              React.createElement('input', { type: "password", id: "password", value: password, onChange: e => setPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
+                React.createElement('div', {className: 'flex justify-between items-center'},
+                    React.createElement('label', { htmlFor: "login-password", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Password"),
+                    React.createElement('button', { type: "button", onClick: onForgotPassword, className: "text-xs font-medium text-primary-600 dark:text-primary-400 hover:underline" }, "Forgot Password?")
+                ),
+                React.createElement('input', { type: "password", id: "login-password", value: password, onChange: e => setPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm" })
             ),
             error && React.createElement('p', { className: "mt-2 text-xs text-red-600 dark:text-red-400" }, error)
           ),
-          React.createElement('footer', { className: "px-6 pb-6" },
-             React.createElement('button', { type: "submit", disabled: isLoggingIn, className: "w-full rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:bg-primary-400" }, isLoggingIn ? 'Logging in...' : 'Login')
+          React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+             React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Cancel"),
+             React.createElement('button', { type: "submit", disabled: isLoggingIn, className: "w-24 justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:bg-primary-400" }, isLoggingIn ? '...' : 'Login')
+          )
+        )
+      )
+    );
+};
+
+// --- components/ChangeOwnPasswordModal.tsx ---
+const ChangeOwnPasswordModal = ({ isOpen, onClose, onPasswordChange }) => {
+    const [newPassword, setNewPassword] = React.useState('');
+    const [confirmPassword, setConfirmPassword] = React.useState('');
+    const [error, setError] = React.useState('');
+    const [isChanging, setIsChanging] = React.useState(false);
+
+    React.useEffect(() => {
+        if(isOpen) {
+            setNewPassword('');
+            setConfirmPassword('');
+            setError('');
+            setIsChanging(false);
+        }
+    }, [isOpen]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (newPassword.length < 6) {
+            setError("Password must be at least 6 characters long.");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+        setError('');
+        setIsChanging(true);
+        onPasswordChange(newPassword);
+    };
+    
+    return React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md", onClick: e => e.stopPropagation() },
+        React.createElement('header', { className: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" },
+          React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, "Change Your Password"),
+          React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600" }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
+        ),
+        React.createElement('form', { onSubmit: handleSubmit },
+          React.createElement('main', { className: "p-6 space-y-4" },
+             React.createElement('div', null,
+              React.createElement('label', { htmlFor: "new-password-own", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "New Password"),
+              React.createElement('input', { type: "password", id: "new-password-own", value: newPassword, onChange: e => setNewPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm" })
+            ),
+             React.createElement('div', null,
+              React.createElement('label', { htmlFor: "confirm-password-own", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Confirm New Password"),
+              React.createElement('input', { type: "password", id: "confirm-password-own", value: confirmPassword, onChange: e => setConfirmPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm" })
+            ),
+            error && React.createElement('p', { className: "text-xs text-red-600 dark:text-red-400" }, error)
+          ),
+          React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+             React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Cancel"),
+             React.createElement('button', { type: "submit", disabled: isChanging, className: "w-40 justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:bg-primary-400" }, isChanging ? 'Saving...' : 'Save New Password')
           )
         )
       )
@@ -1375,6 +1320,114 @@ const ChangePasswordModal = ({ isOpen, onPasswordChange }) => {
     );
 };
 
+// --- components/Header.tsx ---
+const Header = () => {
+  const context = React.useContext(AppContext);
+  const [isSwitchAppOpen, setSwitchAppOpen] = React.useState(false);
+  const switchAppRef = React.useRef(null);
+  const [isSupportOpen, setSupportOpen] = React.useState(false);
+  const supportRef = React.useRef(null);
+  const [isUserMenuOpen, setUserMenuOpen] = React.useState(false);
+  const userMenuRef = React.useRef(null);
+  
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+        if (switchAppRef.current && !switchAppRef.current.contains(event.target)) {
+            setSwitchAppOpen(false);
+        }
+        if (supportRef.current && !supportRef.current.contains(event.target)) {
+            setSupportOpen(false);
+        }
+        if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+            setUserMenuOpen(false);
+        }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [switchAppRef, supportRef, userMenuRef]);
+
+  if (!context) return null;
+  const { currentUser, theme, toggleTheme, setActiveView, activeView, openLoginModal, logout, setCurrentApplication, appPermissions, openChangePasswordModal } = context;
+
+  const accessibleApps = React.useMemo(() => {
+    if (!currentUser || !appPermissions) return [];
+    return Object.keys(SWITCHABLE_APPS).filter(appId => appPermissions[appId]?.includes(currentUser.id));
+  }, [currentUser, appPermissions]);
+
+  return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-md z-50" },
+    React.createElement('div', { className: "container mx-auto px-4 sm:px-6 lg:px-1" },
+      React.createElement('div', { className: "flex items-center justify-between py-4" },
+        React.createElement('div', { className: "flex items-center space-x-4 min-w-0" },
+          React.createElement('div', { className: "flex items-center text-primary-600 dark:text-primary-400" },
+            React.createElement('img', { src: "https://www.dropbox.com/scl/fi/3w8cuktwjostzrb21pafw/LOGO-2.png?rlkey=crkvpkwg128csjf52s565avoa&st=aaqqxf4n&raw=1",alt: "Kasam ConneKT Logo", className: "h-8 flex-shrink-0" }),
+            React.createElement('span', { className: "ml-2 text-xl font-bold whitespace-nowrap truncate" }, "Kasam Connekt")
+          ),
+          currentUser && currentUser.role === Role.ADMIN && React.createElement('nav', { className: "hidden md:flex items-center space-x-2" },
+            React.createElement('button', { onClick: () => setActiveView('dashboard'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
+              React.createElement(TicketIcon, { className: "h-5 w-5 mr-2" }), "Dashboard"),
+            React.createElement('button', { onClick: () => setActiveView('analytics'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'analytics' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
+              React.createElement(ChartBarIcon, { className: "h-5 w-5 mr-2" }), "Analytics"),
+            React.createElement('button', { onClick: () => setActiveView('userManagement'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'userManagement' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
+              React.createElement(UsersIcon, { className: "h-5 w-5 mr-2" }), "Users")
+          )
+        ),
+        React.createElement('div', { className: "flex items-center space-x-2" },
+          currentUser ? (
+            React.createElement('div', { className: "flex items-center space-x-2" },
+                React.createElement('div', { className: "relative", ref: userMenuRef },
+                   React.createElement('button', { onClick: () => setUserMenuOpen(prev => !prev), className: "flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" },
+                      React.createElement('span', { className: "hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-200" }, `${currentUser.name}`),
+                      React.createElement(UserCircleIcon, { className: "h-6 w-6 text-gray-500 dark:text-gray-400" })
+                   ),
+                   isUserMenuOpen && React.createElement('div', { className: "origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" },
+                        React.createElement('div', { className: "py-1" },
+                           React.createElement('button', { onClick: () => { openChangePasswordModal(); setUserMenuOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(KeyIcon, { className: "h-5 w-5 mr-3" }), "Change Password"),
+                           React.createElement('button', { onClick: () => { logout(); setUserMenuOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(ArrowLeftOnRectangleIcon, { className: "h-5 w-5 mr-3" }), "Logout")
+                        )
+                   )
+                ),
+                React.createElement('div', { className: "relative", ref: switchAppRef },
+                    React.createElement('button', { onClick: () => setSwitchAppOpen(prev => !prev), className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Switch App" },
+                      React.createElement(SwitchHorizontalIcon, { className: "h-6 w-6" })
+                    ),
+                    isSwitchAppOpen && React.createElement('div', { className: "origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" },
+                        React.createElement('div', { className: "py-1" },
+                            React.createElement('button', { onClick: () => { setActiveView('dashboard'); setCurrentApplication('e-ticket'); setSwitchAppOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(TicketIcon, { className: "h-5 w-5 mr-3" }), 'E-Ticket Dashboard'),
+                            accessibleApps.map(appId => {
+                                const app = SWITCHABLE_APPS[appId];
+                                return React.createElement('button', { key: appId, onClick: () => { setCurrentApplication(appId); setSwitchAppOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(app.icon, { className: "h-5 w-5 mr-3" }), app.name)
+                            })
+                        )
+                    )
+                ),
+            )
+          ) : (
+             React.createElement('button', { onClick: openLoginModal, className: "inline-flex items-center justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700" }, "Login")
+          ),
+          React.createElement('button', { onClick: toggleTheme, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Toggle Theme" },
+            theme === 'light' ? React.createElement(MoonIcon, { className: "h-6 w-6" }) : React.createElement(SunIcon, { className: "h-6 w-6" })
+          ),
+          React.createElement('div', { className: "relative", ref: supportRef },
+              React.createElement('button', { onClick: () => setSupportOpen(prev => !prev), className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Support" },
+                  React.createElement(InformationCircleIcon, { className: "h-6 w-6" })
+              ),
+              isSupportOpen && React.createElement('div', { className: "origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" },
+                  React.createElement('div', { className: "p-4" },
+                      React.createElement('p', { className: "text-sm font-semibold text-gray-900 dark:text-white" }, "Developed by"),
+                      React.createElement('p', { className: "text-sm text-gray-600 dark:text-gray-300" }, "Kasam Fashions Accounts Dept."),
+                      React.createElement('p', { className: "text-sm font-semibold text-gray-900 dark:text-white mt-3" }, "Contact Support"),
+                      React.createElement('a', { href: "mailto:accounts@kasamfashions.com", className: "text-sm text-primary-600 dark:text-primary-400 hover:underline" }, "accounts@kasamfashions.com")
+                  )
+              )
+          )
+        )
+      )
+    )
+  );
+};
+
 // --- App.tsx ---
 const getInitialState = (key, defaultValue) => {
     try {
@@ -1398,7 +1451,7 @@ const App = () => {
   const [activeView, setActiveView] = React.useState('dashboard');
   const [currentApplication, setCurrentApplication] = React.useState('e-ticket');
   const [isLoginModalOpen, setLoginModalOpen] = React.useState(false);
-  const [userToLogin, setUserToLogin] = React.useState(null);
+  const [isChangePasswordModalOpen, setChangePasswordModalOpen] = React.useState(false);
   const [isFirstAdminLogin, setFirstAdminLogin] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
 
@@ -1497,21 +1550,28 @@ const App = () => {
   const toggleTheme = React.useCallback(() => setTheme(prev => (prev === 'light' ? 'dark' : 'light')), []);
   
   // --- Auth Handlers ---
-  const openLoginModal = (user) => {
-    setUserToLogin(user);
+  const openLoginModal = () => {
     setLoginModalOpen(true);
   };
+  const openChangePasswordModal = () => {
+    setChangePasswordModalOpen(true);
+  }
 
-  const handleLogin = (user, email, password) => {
-    const userInDb = users.find(u => u.id === user.id);
-    if (userInDb && userInDb.email === email && userInDb.password === password) {
+  const handleLogin = async (username, password) => {
+    const userInDb = users.find(u => u.name === username && u.password === password);
+    if (userInDb) {
       if (userInDb.role === Role.ADMIN && !userInDb.passwordChanged) {
           setFirstAdminLogin(true);
       }
       setCurrentUser(userInDb);
+      setLoginModalOpen(false);
       return true;
     }
     return false;
+  };
+  
+  const handleForgotPassword = () => {
+      alert("Please contact your administrator to reset your password.");
   };
   
   const logout = () => {
@@ -1521,21 +1581,35 @@ const App = () => {
   };
   
   const changePassword = async (userId, newPassword) => {
-      await db.collection('users').doc(userId).update({ password: newPassword });
+      await db.collection('users').doc(userId).update({ password: newPassword, passwordChanged: true });
       if (userId === currentUser?.id) {
-          setCurrentUser(prev => ({ ...prev, password: newPassword }));
+          setCurrentUser(prev => ({ ...prev, password: newPassword, passwordChanged: true }));
       }
   };
 
+  const handleChangeOwnPassword = async (newPassword) => {
+    if (currentUser) {
+        await changePassword(currentUser.id, newPassword);
+        setChangePasswordModalOpen(false);
+        alert("Password changed successfully.");
+    }
+  }
+
   const changeAdminPassword = async (newPassword) => {
-    const adminUser = users.find(u => u.role === Role.ADMIN);
-    if(adminUser) {
-        await db.collection('users').doc(adminUser.id).update({ 
-            password: newPassword,
-            passwordChanged: true
-        });
+    if(currentUser && currentUser.role === Role.ADMIN) {
+        await changePassword(currentUser.id, newPassword);
         setFirstAdminLogin(false);
         alert("Admin password updated successfully.");
+    }
+  };
+
+  const resetUserPassword = async (userId) => {
+    try {
+        await db.collection('users').doc(userId).update({ password: 'password', passwordChanged: false });
+        alert('Password has been successfully reset to "password". The user will be required to change it on their next login if they are an Admin.');
+    } catch (error) {
+        console.error("Error resetting password:", error);
+        alert("Failed to reset password. Please try again.");
     }
   };
   
@@ -1742,7 +1816,7 @@ const App = () => {
 
   const contextValue = React.useMemo(() => ({
     currentUser, theme, toggleTheme, tickets: getVisibleTickets, allTickets: populatedTickets, createTicket, updateTicketStatus, addComment, assignTicketToSelf, assignTicketToSpecialist, requestTicketClosure, approveTicketClosure, rejectTicketClosure, users, createUser, updateUser, deleteUser, categoryAssignments, updateCategoryAssignment,
-    activeView, setActiveView, openLoginModal, logout, changePassword, deleteTicketsByStatus, setCurrentApplication, appPermissions, updateAppPermission
+    activeView, setActiveView, openLoginModal, logout, changePassword, deleteTicketsByStatus, setCurrentApplication, appPermissions, updateAppPermission, openChangePasswordModal, resetUserPassword
   }), [currentUser, theme, getVisibleTickets, populatedTickets, users, categoryAssignments, activeView, appPermissions]);
   
   if (isLoading) {
@@ -1767,7 +1841,7 @@ const App = () => {
             ),
             React.createElement('div', null,
                 React.createElement('h1', { className: "text-2xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Welcome to Kasam Connekt"),
-                React.createElement('p', { className: "mt-4 text-sm text-gray-600 dark:text-gray-300" }, "Please select a user from the top right to log in.")
+                React.createElement('p', { className: "mt-4 text-sm text-gray-600 dark:text-gray-300" }, "Please click 'Login' in the top right to get started.")
             )
        ));
     }
@@ -1797,7 +1871,7 @@ const App = () => {
   const renderSalesInsightsView = () => (
     React.createElement('iframe', {
         src: "https://kasamfashions.github.io/Kasam-Sales-Insights/",
-        className: "w-full h-[calc(100vh-4rem)] border-0", // 4rem is approx h-16 header height
+        className: "w-full h-[calc(100vh-5rem)] border-0",
         title: "Kasam Sales Insights"
     })
   );
@@ -1809,8 +1883,13 @@ const App = () => {
       React.createElement(LoginModal, { 
           isOpen: isLoginModalOpen, 
           onClose: () => setLoginModalOpen(false), 
-          user: userToLogin, 
           onLogin: handleLogin,
+          onForgotPassword: handleForgotPassword
+      }),
+      React.createElement(ChangeOwnPasswordModal, {
+          isOpen: isChangePasswordModalOpen,
+          onClose: () => setChangePasswordModalOpen(false),
+          onPasswordChange: handleChangeOwnPassword,
       }),
       React.createElement(ChangePasswordModal, {
           isOpen: isFirstAdminLogin,
@@ -1829,4 +1908,3 @@ if (rootElement) {
     </script>
   </body>
 </html>
-
