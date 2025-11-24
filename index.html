@@ -1,0 +1,2013 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="https://www.dropbox.com/scl/fi/j24evqxph97hho8vudvdk/Kasam-Connekt.png?rlkey=yn315abazpiof90yqbcruqk9d&raw=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kasam Connekt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: {"50":"#eff6ff","100":"#dbeafe","200":"#bfdbfe","300":"#93c5fd","400":"#60a5fa","500":"#3b82f6","600":"#2563eb","700":"#1d4ed8","800":"#1e40af","900":"#1e3a8a","950":"#172554"}
+            },
+            animation: {
+              'float-slow': 'float 6s ease-in-out infinite',
+              'float-medium': 'float 4s ease-in-out infinite',
+              'float-fast': 'float 3s ease-in-out infinite',
+              'spin-slow': 'spin 12s linear infinite',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <style>
+      /* Custom scrollbar for webkit */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 4px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #475569; 
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.3.0",
+    "@heroicons/react/": "https://aistudiocdn.com/@heroicons/react@^2.2.0/"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <div id="root"></div>
+    <script type="module">
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import ReactDOM from 'react-dom/client';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+
+// --- Types ---
+const Role = {
+  STORE_MANAGER: 'Store Manager',
+  CLUSTER_MANAGER: 'Cluster Manager',
+  DEPARTMENT_SPECIALIST: 'Department Specialist',
+  OPERATIONS_HEAD: 'Operations Head',
+  ADMIN: 'Admin',
+};
+
+const Status = {
+  RAISED: 'Raised',
+  ASSIGNED: 'Assigned',
+  IN_PROGRESS: 'In Progress',
+  COMPLETED: 'Completed',
+  PENDING_CLOSURE: 'Pending Closure',
+  CLOSED: 'Closed',
+};
+
+const Category = {
+  MAINTENANCE: 'Maintenance',
+  HR: 'HR',
+  INVENTORY: 'Inventory',
+  IT: 'IT Support',
+  CCTV: 'CCTV',
+  VISUAL_MERCHANDIZING: 'Visual Merchandizing',
+  ACCOUNTS: 'Accounts',
+};
+
+// --- Icons ---
+const SunIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M12 21a9 9 0 110-18 9 9 0 010 18z" })
+  )
+);
+const MoonIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" })
+  )
+);
+const UserCircleIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" })
+  )
+);
+const ChartBarIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" })
+  )
+);
+const TicketIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-1.5h5.25m-5.25 0h3m-3 0h-3m2.25 0H5.625M17.25 6H6.75a3.375 3.375 0 00-3.375 3.375v5.25a3.375 3.375 0 003.375 3.375h10.5a3.375 3.375 0 003.375-3.375v-5.25a3.375 3.375 0 00-3.375-3.375z" })
+  )
+);
+const PlusIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 4.5v15m7.5-7.5h-15" })
+  )
+);
+const SearchIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" })
+  )
+);
+const CalendarIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18" })
+  )
+);
+const UserIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" })
+  )
+);
+const TagIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" }),
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M6 6h.008v.008H6V6z" })
+  )
+);
+const XMarkIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M6 18L18 6M6 6l12 12" })
+  )
+);
+const ChatBubbleLeftRightIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.72-3.72a1.063 1.063 0 00-1.5 0l-3.72 3.72A2.123 2.123 0 013 16.899v-4.286c0-.97.616-1.813 1.5-2.097m16.5 0a2.123 2.123 0 00-1.5-2.097m-15 0A2.123 2.123 0 013 6.414v-1.872c0-1.136.847-2.1 1.98-2.193l3.72 3.72a1.063 1.063 0 001.5 0l3.72-3.72A2.123 2.123 0 0118 4.542v1.872c0 .97-.616 1.813-1.5 2.097m-15 0m15 0" })
+  )
+);
+const ClockIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" })
+  )
+);
+const ArrowPathIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0011.664 0l3.18-3.185m-14.994-1.581v-4.992m0 0h4.992m-4.993 0l3.181-3.183a8.25 8.25 0 0111.664 0l3.18 3.185" })
+  )
+);
+const ArrowDownTrayIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" })
+  )
+);
+const UsersIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m-7.5-2.962a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5zM10.5 18.75a9 9 0 10-9-9 9 9 0 009 9z" })
+  )
+);
+const PencilIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" })
+  )
+);
+const TrashIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.134-2.033-2.134H8.033C6.91 2.75 6 3.704 6 4.884v.916m7.5 0a48.667 48.667 0 00-7.5 0" })
+  )
+);
+const KeyIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" })
+  )
+);
+const CheckCircleIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" })
+  )
+);
+const XCircleIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" })
+  )
+);
+const ArrowLeftOnRectangleIcon = (props) => (
+    React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" })
+    )
+);
+const SwitchHorizontalIcon = (props) => (
+    React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+        React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M7.5 21L3 16.5m0 0L7.5 12M3 16.5h18m-7.5-12L21 9m0 0L14 4.5M21 9H3" })
+    )
+);
+const InformationCircleIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" })
+  )
+);
+const CubeIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l-9 5.25m0-9v9" })
+  )
+);
+const GlobeAltIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S12 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S12 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.546-3.131 1.567-4.333M6.342 9.632l-1.42 1.42m14.156-1.42l1.42 1.42" })
+  )
+);
+
+// --- Constants ---
+const INITIAL_USERS = [
+  { id: 'user-admin-1', name: 'Admin User', role: Role.ADMIN, email: 'admin@retailops.com', password: 'password123', passwordChanged: false },
+  { id: 'user-ops-1', name: 'Olivia Payne', role: Role.OPERATIONS_HEAD, email: 'olivia.payne@retailops.com', password: 'password' },
+  { id: 'user-cm-1', name: 'Charles Miller', role: Role.CLUSTER_MANAGER, cluster: 'North Cluster', email: 'charles.miller@retailops.com', password: 'password' },
+  { id: 'user-cm-2', name: 'Chloe Davis', role: Role.CLUSTER_MANAGER, cluster: 'South Cluster', email: 'chloe.davis@retailops.com', password: 'password' },
+  { id: 'user-ds-1', name: 'John Smith', role: Role.DEPARTMENT_SPECIALIST, email: 'john.smith.it@retailops.com', password: 'password' },
+  { id: 'user-ds-2', name: 'Jane Doe', role: Role.DEPARTMENT_SPECIALIST, email: 'jane.doe.hr@retailops.com', password: 'password' },
+  { id: 'user-ds-3', name: 'Peter Jones', role: Role.DEPARTMENT_SPECIALIST, email: 'peter.jones.maint@retailops.com', password: 'password' },
+  { id: 'user-sm-1', name: 'Sophie Morgan', role: Role.STORE_MANAGER, store: 'Downtown Central', email: 'sophie.morgan@retailops.com', password: 'password' },
+];
+
+const INITIAL_TICKETS = [
+  { id: 'TICKET-001', title: 'Leaking AC unit in main aisle', description: 'The main air conditioning unit in aisle 5 has been leaking water...', status: Status.ASSIGNED, category: Category.MAINTENANCE, priority: 'High', raisedBy: 'user-sm-1', store: 'Downtown Central', assignedTo: 'user-ds-3', assignedClusterManager: 'user-cm-1', createdAt: '2023-10-26T09:00:00Z', updatedAt: '2023-10-26T09:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-26T09:00:00Z', updatedBy: 'user-sm-1' } ] },
+];
+
+const INITIAL_CATEGORY_ASSIGNMENTS = {
+    [Category.IT]: ['user-ds-1'],
+    [Category.HR]: ['user-ds-2'],
+    [Category.MAINTENANCE]: ['user-ds-3'],
+};
+
+const INITIAL_APP_PERMISSIONS = {
+    'sales-insights': ['user-admin-1'],
+};
+
+const SWITCHABLE_APPS = {
+    'sales-insights': {
+        name: 'Kasam Sales Insights',
+        url: 'https://kasamfashions.github.io/Kasam-Sales-Insights/',
+        icon: ChartBarIcon
+    }
+};
+
+// --- Firebase ---
+const firebaseConfig = {
+  apiKey: "AIzaSyCSxPL4Fl5ajsMJG8jVcbek-aHEvMclVug",
+  authDomain: "kasam-connekt.firebaseapp.com",
+  projectId: "kasam-connekt",
+  storageBucket: "kasam-connekt.firebasestorage.app",
+  messagingSenderId: "844196020427",
+  appId: "1:844196020427:web:b6b4882a212646bf36db4e",
+  measurementId: "G-CKFC4JWT0X"
+};
+
+let db;
+if (window.firebase) {
+    if (!window.firebase.apps.length) {
+        window.firebase.initializeApp(firebaseConfig);
+    }
+    db = window.firebase.firestore();
+}
+
+// --- App Context ---
+const AppContext = createContext(null);
+
+const getInitialState = (key, defaultValue) => {
+    try {
+        const savedItem = localStorage.getItem(key);
+        if (savedItem) return JSON.parse(savedItem);
+    } catch (error) {
+        console.error(`Error reading from localStorage key “${key}”:`, error);
+    }
+    return defaultValue;
+};
+
+const AppProvider = ({ children }) => {
+  const [users, setUsers] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [categoryAssignments, setCategoryAssignments] = useState({});
+  const [appPermissions, setAppPermissions] = useState({});
+  
+  const [currentUser, setCurrentUser] = useState(() => getInitialState('kasam_currentUser', null));
+  const [theme, setTheme] = useState(() => getInitialState('kasam_theme', 'light'));
+  
+  const [activeView, setActiveView] = useState('dashboard');
+  const [currentApplication, setCurrentApplication] = useState('e-ticket');
+  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+  const [isFirstAdminLogin, setFirstAdminLogin] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if(!db) return;
+    const seedDatabase = async () => {
+        const configRef = db.collection('meta').doc('config');
+        const configDoc = await configRef.get();
+
+        if (configDoc.exists && configDoc.data().seeded) {
+            return;
+        }
+        
+        console.log("Database is empty. Seeding initial data...");
+        const batch = db.batch();
+
+        INITIAL_USERS.forEach((user) => {
+            const userRef = db.collection('users').doc(user.id);
+            batch.set(userRef, user);
+        });
+
+        INITIAL_TICKETS.forEach((ticket) => {
+            const ticketRef = db.collection('tickets').doc(ticket.id);
+            batch.set(ticketRef, ticket);
+        });
+        
+        const assignmentsRef = db.collection('meta').doc('categoryAssignments');
+        batch.set(assignmentsRef, INITIAL_CATEGORY_ASSIGNMENTS);
+        
+        const permissionsRef = db.collection('meta').doc('appPermissions');
+        batch.set(permissionsRef, INITIAL_APP_PERMISSIONS);
+
+        batch.set(configRef, { seeded: true, version: 1 });
+        
+        await batch.commit();
+        console.log("Initial data seeded successfully.");
+    };
+
+    const setupListeners = () => {
+        const unsubUsers = db.collection('users').onSnapshot((snapshot) => {
+            const usersData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            setUsers(usersData);
+        });
+        const unsubTickets = db.collection('tickets').onSnapshot((snapshot) => {
+            const ticketsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+            setTickets(ticketsData);
+        });
+        const unsubAssignments = db.collection('meta').doc('categoryAssignments').onSnapshot((doc) => {
+            setCategoryAssignments(doc.data() || {});
+        });
+        const unsubPermissions = db.collection('meta').doc('appPermissions').onSnapshot((doc) => {
+            setAppPermissions(doc.data() || {});
+        });
+
+        return () => {
+            unsubUsers();
+            unsubTickets();
+            unsubAssignments();
+            unsubPermissions();
+        };
+    };
+
+    seedDatabase().then(() => {
+        const unsubscribe = setupListeners();
+        setIsLoading(false);
+        return unsubscribe;
+    }).catch(console.error);
+    
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('kasam_currentUser', JSON.stringify(currentUser));
+  }, [currentUser]);
+  useEffect(() => {
+    localStorage.setItem('kasam_theme', JSON.stringify(theme));
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+  }, [theme]);
+
+  const populatedTickets = useMemo(() => {
+    if (!users.length || !tickets.length) return [];
+    const userMap = new Map(users.map(u => [u.id, u]));
+    const findUser = (id) => (typeof id === 'string' ? userMap.get(id) : id) || null;
+    return tickets.map(ticket => ({
+      ...ticket,
+      raisedBy: findUser(ticket.raisedBy),
+      assignedTo: findUser(ticket.assignedTo),
+      assignedClusterManager: findUser(ticket.assignedClusterManager),
+      closureRequestedBy: findUser(ticket.closureRequestedBy),
+      history: (ticket.history || []).map(h => ({ ...h, updatedBy: findUser(h.updatedBy) })),
+      comments: (ticket.comments || []).map(c => ({ ...c, user: findUser(c.user) })),
+    }));
+  }, [tickets, users]);
+
+  const toggleTheme = useCallback(() => setTheme(prev => (prev === 'light' ? 'dark' : 'light')), []);
+  
+  const handleLogin = async (username, password) => {
+    const userInDb = users.find(u => u.name === username && u.password === password);
+    if (userInDb) {
+      if (userInDb.role === Role.ADMIN && !userInDb.passwordChanged) {
+          setFirstAdminLogin(true);
+      }
+      setCurrentUser(userInDb);
+      return true;
+    }
+    return false;
+  };
+  
+  const logout = () => {
+      setCurrentUser(null);
+      setActiveView('dashboard');
+      setCurrentApplication('e-ticket');
+  };
+  
+  const changePassword = async (userId, newPassword) => {
+      await db.collection('users').doc(userId).update({ password: newPassword, passwordChanged: true });
+      if (userId === currentUser?.id) {
+          setCurrentUser(prev => prev ? ({ ...prev, password: newPassword, passwordChanged: true }) : null);
+      }
+  };
+
+  const getVisibleTickets = useMemo(() => {
+    if (!currentUser) return [];
+    switch (currentUser.role) {
+      case Role.STORE_MANAGER: return populatedTickets.filter(t => t.raisedBy?.id === currentUser.id);
+      case Role.CLUSTER_MANAGER: return populatedTickets.filter(t => t.assignedClusterManager?.id === currentUser.id);
+      case Role.DEPARTMENT_SPECIALIST:
+        return populatedTickets.filter(ticket => {
+          if (ticket.assignedTo?.id === currentUser.id) return true;
+          const specialistCategories = Object.keys(categoryAssignments || {}).filter(cat => categoryAssignments[cat]?.includes(currentUser.id));
+          if (!ticket.assignedTo && specialistCategories.includes(ticket.category)) return true;
+          return false;
+        });
+      case Role.OPERATIONS_HEAD:
+      case Role.ADMIN: return populatedTickets;
+      default: return [];
+    }
+  }, [currentUser, populatedTickets, categoryAssignments]);
+
+  const createTicket = (newTicketData) => {
+    const newTicket = { 
+        ...newTicketData, 
+        status: Status.RAISED, 
+        assignedTo: null,
+        closureRequestedBy: null, 
+        history: [{ status: Status.RAISED, timestamp: new Date().toISOString(), updatedBy: currentUser?.id }], 
+        comments: [] 
+    };
+    db.collection('tickets').doc(newTicket.id).set(newTicket);
+  };
+
+  const updateTicketStatus = (ticketId, newStatus) => {
+    const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser?.id };
+    db.collection('tickets').doc(ticketId).update({ 
+        status: newStatus, 
+        history: window.firebase.firestore.FieldValue.arrayUnion(historyEvent), 
+        updatedAt: new Date().toISOString() 
+    });
+  };
+
+  const addComment = (ticketId, commentText) => {
+    const newComment = { id: `C-${Date.now()}`, user: currentUser?.id, text: commentText, timestamp: new Date().toISOString() };
+    db.collection('tickets').doc(ticketId).update({
+        comments: window.firebase.firestore.FieldValue.arrayUnion(newComment)
+    });
+  };
+
+  const resetUserPassword = async (userId) => {
+    try {
+        await db.collection('users').doc(userId).update({ password: 'password', passwordChanged: false });
+        alert('Password has been successfully reset to "password". The user will be required to change it on their next login if they are an Admin.');
+    } catch (error) {
+        console.error("Error resetting password:", error);
+        alert("Failed to reset password. Please try again.");
+    }
+  };
+
+  const deleteUser = (userId) => {
+    if (currentUser?.id === userId) {
+      alert("You cannot delete yourself.");
+      return;
+    }
+    db.collection('users').doc(userId).delete();
+  };
+
+  const deleteTicketsByStatus = async (statusesToDelete) => {
+    if (currentUser?.role !== Role.ADMIN) {
+        alert("You don't have permission for this action.");
+        return;
+    }
+    if (!statusesToDelete || statusesToDelete.length === 0) {
+        alert("No statuses selected for deletion.");
+        return;
+    }
+
+    const confirmationMessage = `DANGER: Are you sure you want to permanently delete tickets with the following statuses?\n\n- ${statusesToDelete.join('\n- ')}\n\nThis action cannot be undone.`;
+
+    if (!window.confirm(confirmationMessage)) {
+        return;
+    }
+    
+    setIsLoading(true);
+    try {
+        const ticketsRef = db.collection('tickets');
+        const query = ticketsRef.where('status', 'in', statusesToDelete);
+
+        let snapshot;
+        do {
+            snapshot = await query.limit(500).get();
+            if (snapshot.empty) break;
+
+            const batch = db.batch();
+            snapshot.docs.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            await batch.commit();
+        } while (!snapshot.empty);
+
+        alert("Selected tickets have been deleted successfully.");
+    } catch (error) {
+        console.error("Error deleting tickets by status:", error);
+        alert("An error occurred while deleting tickets. Please check the console.");
+    } finally {
+        setIsLoading(false);
+    }
+  };
+  
+  const assignTicketToSelf = (ticketId) => {
+    const historyEvent = { status: Status.ASSIGNED, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+    db.collection('tickets').doc(ticketId).update({
+        assignedTo: currentUser.id,
+        status: Status.ASSIGNED,
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        updatedAt: new Date().toISOString()
+    });
+  };
+
+  const assignTicketToSpecialist = async (ticketId, specialistId) => {
+     const ticketRef = db.collection('tickets').doc(ticketId);
+     const doc = await ticketRef.get();
+     const ticket = doc.data();
+
+     if (ticket) {
+         let newStatus = ticket.status;
+         if (specialistId && ticket.status === Status.RAISED) newStatus = Status.ASSIGNED;
+         else if (!specialistId) newStatus = Status.RAISED;
+         const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+         ticketRef.update({
+             assignedTo: specialistId || null,
+             status: newStatus,
+             history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+             updatedAt: new Date().toISOString()
+         });
+     }
+  };
+
+  const requestTicketClosure = (ticketId) => {
+    const historyEvent = { status: Status.PENDING_CLOSURE, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+    db.collection('tickets').doc(ticketId).update({
+        status: Status.PENDING_CLOSURE,
+        closureRequestedBy: currentUser.id,
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        updatedAt: new Date().toISOString()
+    });
+  };
+  
+  const approveTicketClosure = (ticketId) => {
+    const historyEvent = { status: Status.CLOSED, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+    db.collection('tickets').doc(ticketId).update({
+        status: Status.CLOSED,
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        updatedAt: new Date().toISOString()
+    });
+  };
+
+  const rejectTicketClosure = (ticketId, reason) => {
+    const newComment = { id: `C-${Date.now()}`, user: currentUser.id, text: `Closure Rejected: ${reason}`, timestamp: new Date().toISOString() };
+    const historyEvent = { status: Status.IN_PROGRESS, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
+    db.collection('tickets').doc(ticketId).update({
+        status: Status.IN_PROGRESS,
+        comments: firebase.firestore.FieldValue.arrayUnion(newComment),
+        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        updatedAt: new Date().toISOString(),
+        closureRequestedBy: null
+    });
+  };
+
+  const createUser = (userData, password) => {
+    const id = `user-${Date.now()}`;
+    const newUser = { ...userData, id, password, ...(userData.role === Role.ADMIN && {passwordChanged: false}) };
+    db.collection('users').doc(id).set(newUser);
+  };
+  
+  const updateUser = (userId, updates) => {
+    db.collection('users').doc(userId).update(updates);
+  };
+
+  const updateCategoryAssignment = (category, userId, isAssigned) => {
+      const docRef = db.collection('meta').doc('categoryAssignments');
+      db.runTransaction(async (transaction) => {
+          const doc = await transaction.get(docRef);
+          const data = doc.data() || {};
+          const current = data[category] || [];
+          const newAssignments = isAssigned
+              ? [...new Set([...current, userId])]
+              : current.filter(id => id !== userId);
+          transaction.update(docRef, { [category]: newAssignments });
+      });
+  };
+
+  const updateAppPermission = (appId, userId, hasAccess) => {
+      const docRef = db.collection('meta').doc('appPermissions');
+      const fieldValue = firebase.firestore.FieldValue;
+
+      if (hasAccess) {
+          docRef.set({
+              [appId]: fieldValue.arrayUnion(userId)
+          }, { merge: true }).catch(error => {
+              console.error("Error adding app permission:", error);
+              alert("Could not grant permission. Please try again.");
+          });
+      } else {
+          docRef.update({
+              [appId]: fieldValue.arrayRemove(userId)
+          }).catch(error => {
+              console.error("Error removing app permission:", error);
+              alert("Could not revoke permission. Please try again.");
+          });
+      }
+  };
+
+
+  const contextValue = {
+    currentUser, theme, toggleTheme, tickets: getVisibleTickets, allTickets: populatedTickets, createTicket, updateTicketStatus, addComment, 
+    users, handleLogin, logout, changePassword, activeView, setActiveView, currentApplication, setCurrentApplication, 
+    isChangePasswordModalOpen, setChangePasswordModalOpen, isFirstAdminLogin, setFirstAdminLogin,
+    categoryAssignments, appPermissions, isLoading, db,
+    resetUserPassword, deleteUser, deleteTicketsByStatus, assignTicketToSelf, assignTicketToSpecialist,
+    requestTicketClosure, approveTicketClosure, rejectTicketClosure, createUser, updateUser, updateCategoryAssignment, updateAppPermission
+  };
+  
+  return (
+    React.createElement(AppContext.Provider, { value: contextValue }, children)
+  );
+};
+
+// --- Components ---
+
+const FloatingElement = ({ children, speed, delay, initialX, initialY, scale }) => {
+    return (
+        React.createElement('div', {
+            className: "absolute pointer-events-none opacity-40 text-blue-900/20 animate-float-slow",
+            style: {
+                left: `${initialX}%`,
+                top: `${initialY}%`,
+                animationDuration: `${speed}s`,
+                animationDelay: `${delay}s`,
+                transform: `scale(${scale})`
+            }
+        }, children)
+    );
+};
+
+const Login = ({ onLogin }) => {
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const containerRef = useRef(null);
+    const cardRef = useRef(null);
+
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+    useEffect(() => {
+        const handleMouseMove = (ev) => {
+            if (containerRef.current) {
+                const { clientWidth, clientHeight } = containerRef.current;
+                const x = (ev.clientX - clientWidth / 2) / 35; // Lower sensitivity for a cleaner feel
+                const y = (ev.clientY - clientHeight / 2) / 35;
+                setMousePosition({ x, y });
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, []);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setIsLoading(true);
+        const success = await onLogin(username, password);
+        if (!success) {
+            setError('Invalid credentials.');
+            setIsLoading(false);
+        }
+    };
+
+    const cardStyle = {
+        transform: `rotateY(${mousePosition.x}deg) rotateX(${-mousePosition.y}deg)`,
+        transition: 'transform 0.1s ease-out',
+    };
+
+    const backgroundElements = [
+        { Icon: TicketIcon, x: 10, y: 20, s: 6, d: 0, scale: 1.5 },
+        { Icon: UserIcon, x: 80, y: 15, s: 8, d: 1, scale: 2 },
+        { Icon: ChartBarIcon, x: 15, y: 70, s: 7, d: 2, scale: 1.2 },
+        { Icon: KeyIcon, x: 85, y: 80, s: 9, d: 0.5, scale: 1.8 },
+        { Icon: CubeIcon, x: 45, y: 10, s: 10, d: 3, scale: 1 },
+        { Icon: GlobeAltIcon, x: 60, y: 60, s: 5, d: 1.5, scale: 1.4 },
+        { Icon: TicketIcon, x: 30, y: 85, s: 7, d: 2.5, scale: 0.8 },
+    ];
+
+    return (
+        React.createElement('div', {
+            ref: containerRef,
+            className: "relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center perspective-1000",
+            style: { perspective: '1000px' }
+        },
+            backgroundElements.map((el, idx) => (
+                React.createElement(FloatingElement, { key: idx, speed: el.s, delay: el.d, initialX: el.x, initialY: el.y, scale: el.scale },
+                    React.createElement(el.Icon, { className: "h-12 w-12 text-blue-200 dark:text-blue-800" })
+                )
+            )),
+
+            React.createElement('div', { className: "absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" }),
+
+            React.createElement('div', {
+                ref: cardRef,
+                style: cardStyle,
+                className: "relative z-10 w-full max-w-md p-8 bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] ring-1 ring-gray-200"
+            },
+                React.createElement('div', { className: "flex flex-col items-center justify-center mb-6" },
+                    React.createElement('div', { className: "animate-float-medium mb-4" },
+                        React.createElement('img', {
+                            src: "https://www.dropbox.com/scl/fi/j24evqxph97hho8vudvdk/Kasam-Connekt.png?rlkey=yn315abazpiof90yqbcruqk9d&raw=1",
+                            alt: "Logo",
+                            className: "h-24 w-auto drop-shadow-lg"
+                        })
+                    ),
+                    React.createElement('div', { className: "text-center" },
+                        React.createElement('h2', { className: "text-3xl font-Georgia font-bold text-gray-800 tracking-wider" }, "KASAM CONNEKT"),
+                        React.createElement('p', { className: "text-gray-500 text-sm mt-1 font-medium" }, "Where Technology Meets Teamwork.")
+                    )
+                ),
+
+                React.createElement('form', { onSubmit: handleSubmit, className: "mt-8 space-y-5" },
+                    React.createElement('div', { className: "space-y-4" },
+                        React.createElement('div', { className: "group relative" },
+                            React.createElement('div', { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" },
+                                React.createElement(UserIcon, { className: "h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" })
+                            ),
+                            React.createElement('input', {
+                                id: "username",
+                                type: "text",
+                                required: true,
+                                value: username,
+                                onChange: (e) => setUsername(e.target.value),
+                                className: "block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white/60 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:text-sm transition-all duration-300 shadow-sm",
+                                placeholder: "Username"
+                            })
+                        ),
+                        React.createElement('div', { className: "group relative" },
+                            React.createElement('div', { className: "absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" },
+                                React.createElement(KeyIcon, { className: "h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" })
+                            ),
+                            React.createElement('input', {
+                                id: "password",
+                                type: "password",
+                                required: true,
+                                value: password,
+                                onChange: (e) => setPassword(e.target.value),
+                                className: "block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white/60 text-gray-900 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 sm:text-sm transition-all duration-300 shadow-sm",
+                                placeholder: "Password"
+                            })
+                        )
+                    ),
+
+                    error && React.createElement('div', { className: "text-red-600 text-sm text-center bg-red-50 py-2 rounded-lg border border-red-100 animate-pulse" }, error),
+
+                    React.createElement('div', null,
+                        React.createElement('button', {
+                            type: "submit",
+                            disabled: isLoading,
+                            className: "group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5"
+                        },
+                            isLoading ? React.createElement('svg', { className: "animate-spin -ml-1 mr-3 h-5 w-5 text-white", xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24" },
+                                React.createElement('circle', { className: "opacity-25", cx: "12", cy: "12", r: "10", stroke: "currentColor", strokeWidth: "4" }),
+                                React.createElement('path', { className: "opacity-75", fill: "currentColor", d: "M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" })
+                            ) : 'Sign In'
+                        )
+                    )
+                ),
+                
+                React.createElement('div', { className: "mt-8 flex items-center justify-center text-xs text-gray-400" },
+                     React.createElement('a', { href: "#", onClick: (e) => { e.preventDefault(); alert('Contact Admin: accounts@kasamfashions.com'); }, className: "hover:text-blue-600 transition-colors" }, "Forgot Password?")
+                )
+            ),
+            
+            React.createElement('div', { className: "absolute bottom-6 text-gray-400 text-xs tracking-[0.2em] font-medium" },
+                "KASAM FASHIONS PRIVATE LIMITED"
+            )
+        )
+    );
+};
+
+const statusStylesItem = {
+  [Status.RAISED]: { bg: 'bg-red-100 dark:bg-red-900/50', text: 'text-red-800 dark:text-red-300', border: 'border-red-500' },
+  [Status.ASSIGNED]: { bg: 'bg-blue-100 dark:bg-blue-900/50', text: 'text-blue-800 dark:text-blue-300', border: 'border-blue-500' },
+  [Status.IN_PROGRESS]: { bg: 'bg-yellow-100 dark:bg-yellow-900/50', text: 'text-yellow-800 dark:text-yellow-300', border: 'border-yellow-500' },
+  [Status.COMPLETED]: { bg: 'bg-green-100 dark:bg-green-900/50', text: 'text-green-800 dark:text-green-300', border: 'border-green-500' },
+  [Status.PENDING_CLOSURE]: { bg: 'bg-purple-100 dark:bg-purple-900/50', text: 'text-purple-800 dark:text-purple-300', border: 'border-purple-500' },
+  [Status.CLOSED]: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-800 dark:text-gray-300', border: 'border-gray-500' },
+};
+
+const TicketItem = ({ ticket, onViewDetails }) => {
+  const { bg, text, border } = statusStylesItem[ticket.status];
+  const priorityColor = ticket.priority === 'High' ? 'text-red-500' : ticket.priority === 'Medium' ? 'text-yellow-500' : 'text-green-500';
+  
+  return (
+    React.createElement('div', { className: `bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col border-l-4 ${border}` },
+      React.createElement('div', { className: "p-4 flex-grow" },
+        React.createElement('div', { className: "flex justify-between items-start" },
+          React.createElement('span', { className: `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${bg} ${text}` }, ticket.status),
+          React.createElement('span', { className: `font-bold text-sm ${priorityColor}` }, ticket.priority)
+        ),
+        React.createElement('h3', { className: "mt-3 text-lg font-semibold text-gray-900 dark:text-white truncate", title: ticket.title }, ticket.title),
+        React.createElement('p', { className: "mt-1 text-sm text-gray-500 dark:text-gray-400" }, `ID: ${ticket.id}`),
+        React.createElement('div', { className: "mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300" },
+          React.createElement('div', { className: "flex items-center" }, React.createElement(TagIcon, { className: "h-4 w-4 mr-2 text-gray-400" }), React.createElement('span', null, ticket.category)),
+          React.createElement('div', { className: "flex items-center" }, React.createElement(UserIcon, { className: "h-4 w-4 mr-2 text-gray-400" }), React.createElement('span', null, `${ticket.raisedBy?.name || '...'} (${ticket.raisedBy?.store || ticket.store})`)),
+          React.createElement('div', { className: "flex items-center" }, React.createElement(CalendarIcon, { className: "h-4 w-4 mr-2 text-gray-400" }), React.createElement('span', null, new Date(ticket.createdAt).toLocaleDateString()))
+        )
+      ),
+      React.createElement('div', { className: "bg-gray-50 dark:bg-gray-700/50 px-4 py-3 rounded-b-lg" },
+        React.createElement('button', { onClick: () => onViewDetails(ticket), className: "w-full text-center text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200" }, "View Details")
+      )
+    )
+  );
+};
+
+const statusStylesModal = {
+  [Status.RAISED]: { bg: 'bg-red-100 dark:bg-red-900/50', text: 'text-red-800 dark:text-red-300' },
+  [Status.ASSIGNED]: { bg: 'bg-blue-100 dark:bg-blue-900/50', text: 'text-blue-800 dark:text-blue-300' },
+  [Status.IN_PROGRESS]: { bg: 'bg-yellow-100 dark:bg-yellow-900/50', text: 'text-yellow-800 dark:text-yellow-300' },
+  [Status.COMPLETED]: { bg: 'bg-green-100 dark:bg-green-900/50', text: 'text-green-800 dark:text-green-300' },
+  [Status.PENDING_CLOSURE]: { bg: 'bg-purple-100 dark:bg-purple-900/50', text: 'text-purple-800 dark:text-purple-300' },
+  [Status.CLOSED]: { bg: 'bg-gray-100 dark:bg-gray-700', text: 'text-gray-800 dark:text-gray-300' },
+};
+
+const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
+  const context = useContext(AppContext);
+  const [activeTab, setActiveTab] = useState('comments');
+  const [newComment, setNewComment] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [showRejectionInput, setShowRejectionInput] = useState(false);
+  const [selectedSpecialistId, setSelectedSpecialistId] = useState(null);
+
+  if (!context || !isOpen) return null;
+
+  const isAssignmentChanged = useMemo(() => (ticket.assignedTo?.id || null) !== selectedSpecialistId, [selectedSpecialistId, ticket.assignedTo]);
+
+  useEffect(() => {
+    if (isOpen) {
+      setNewComment('');
+      setActiveTab('comments');
+      setShowRejectionInput(false);
+      setRejectionReason('');
+      setSelectedSpecialistId(ticket.assignedTo?.id || null);
+    }
+  }, [isOpen, ticket]);
+
+  const departmentSpecialistsForCategory = useMemo(() => {
+    const specialistIds = context.categoryAssignments?.[ticket.category] || [];
+    return context.users.filter(u => u.role === Role.DEPARTMENT_SPECIALIST && specialistIds.includes(u.id));
+  }, [context, ticket.category]);
+  
+  const { currentUser, addComment, updateTicketStatus, assignTicketToSelf, assignTicketToSpecialist, requestTicketClosure, approveTicketClosure, rejectTicketClosure } = context;
+  
+  const handleAddComment = () => {
+    if (newComment.trim()) {
+      addComment(ticket.id, newComment.trim());
+      setNewComment('');
+    }
+  };
+  const handleRejectClosure = () => {
+    if (rejectionReason.trim()) {
+      rejectTicketClosure(ticket.id, rejectionReason.trim());
+      setRejectionReason('');
+      setShowRejectionInput(false);
+    } else {
+      alert("Please provide a reason for rejection.");
+    }
+  };
+  const handleSaveAssignment = () => {
+    if (isAssignmentChanged) {
+      assignTicketToSpecialist(ticket.id, selectedSpecialistId);
+    }
+  };
+  const isCurrentUserSpecialistForCategory = useMemo(() => {
+    if (currentUser.role !== Role.DEPARTMENT_SPECIALIST) return false;
+    return context.categoryAssignments?.[ticket.category]?.includes(currentUser.id) ?? false;
+  }, [currentUser, ticket.category, context.categoryAssignments]);
+
+  const canAssignToSelf = currentUser.role === Role.DEPARTMENT_SPECIALIST && !ticket.assignedTo && isCurrentUserSpecialistForCategory;
+  const canManageAssignment = ((currentUser.role === Role.ADMIN || currentUser.role === Role.OPERATIONS_HEAD) || (currentUser.role === Role.CLUSTER_MANAGER && currentUser.id === ticket.assignedClusterManager?.id)) && ticket.status !== Status.CLOSED;
+  const canStartProgress = currentUser.id === ticket.assignedTo?.id && ticket.status === Status.ASSIGNED;
+  const canMarkAsComplete = currentUser.id === ticket.assignedTo?.id && ticket.status === Status.IN_PROGRESS;
+  const canRequestClosure = (currentUser.id === ticket.raisedBy?.id || currentUser.id === ticket.assignedTo?.id) && ticket.status === Status.COMPLETED;
+  const canApproveRejectClosure = [Role.ADMIN, Role.OPERATIONS_HEAD, Role.CLUSTER_MANAGER].includes(currentUser.role) && ticket.status === Status.PENDING_CLOSURE;
+  
+  const renderDetailItem = (Icon, label, value) => (
+    React.createElement('div', null,
+      React.createElement('dt', { className: "text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center" }, React.createElement(Icon, { className: "h-4 w-4 mr-2" }), label),
+      React.createElement('dd', { className: "mt-1 text-sm text-gray-900 dark:text-white" }, value)
+    )
+  );
+
+  return (
+    React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4 transition-opacity", onClick: onClose },
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col", onClick: e => e.stopPropagation() },
+        React.createElement('header', { className: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" },
+          React.createElement('div', null,
+            React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white truncate", title: ticket.title }, ticket.title),
+            React.createElement('p', { className: "text-sm text-gray-500 dark:text-gray-400" }, `ID: ${ticket.id}`)
+          ),
+          React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600" }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
+        ),
+        React.createElement('main', { className: "flex-grow overflow-y-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-6" },
+          React.createElement('div', { className: "lg:col-span-1 space-y-6" },
+            React.createElement('dl', { className: "grid grid-cols-2 gap-x-4 gap-y-6" },
+              React.createElement('div', null,
+                React.createElement('dt', { className: "text-sm font-medium text-gray-500 dark:text-gray-400" }, "Status"),
+                React.createElement('dd', { className: "mt-1" }, React.createElement('span', { className: `inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusStylesModal[ticket.status].bg} ${statusStylesModal[ticket.status].text}` }, ticket.status))
+              ),
+              React.createElement('div', null,
+                React.createElement('dt', { className: "text-sm font-medium text-gray-500 dark:text-gray-400" }, "Priority"),
+                React.createElement('dd', { className: `mt-1 text-sm font-semibold ${ticket.priority === 'High' ? 'text-red-500' : ticket.priority === 'Medium' ? 'text-yellow-500' : 'text-green-500'}` }, ticket.priority)
+              ),
+              React.createElement('div', { className: "col-span-2" }, renderDetailItem(TagIcon, "Category", ticket.category)),
+              React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Raised By", `${ticket.raisedBy?.name || '...'} (${ticket.raisedBy?.store || ticket.store})`)),
+              React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Cluster Manager", ticket.assignedClusterManager?.name || 'N/A')),
+              React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Assigned To", canManageAssignment ? (
+                React.createElement('div', { className: "flex items-center gap-2 mt-1" },
+                  React.createElement('select', { value: selectedSpecialistId || '', onChange: (e) => setSelectedSpecialistId(e.target.value || null), className: "block w-full text-sm rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 text-gray-900 dark:text-200" },
+                    React.createElement('option', { value: "" }, "Unassigned"),
+                    departmentSpecialistsForCategory.length > 0 ? departmentSpecialistsForCategory.map(ds => React.createElement('option', { key: ds.id, value: ds.id }, ds.name)) : React.createElement('option', { disabled: true }, "No specialists for this category")
+                  )
+                )
+              ) : (ticket.assignedTo?.name || 'Unassigned'))),
+              React.createElement('div', { className: "col-span-1" }, renderDetailItem(CalendarIcon, "Created On", new Date(ticket.createdAt).toLocaleString())),
+              React.createElement('div', { className: "col-span-1" }, renderDetailItem(CalendarIcon, "Last Updated", new Date(ticket.updatedAt).toLocaleString()))
+            ),
+            React.createElement('div', { className: "space-y-2" },
+              React.createElement('h4', { className: "text-sm font-medium text-gray-500 dark:text-gray-400" }, "Description"),
+              React.createElement('p', { className: "text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap" }, ticket.description)
+            )
+          ),
+          React.createElement('div', { className: "lg:col-span-2" },
+            React.createElement('div', { className: "border-b border-gray-200 dark:border-gray-700" },
+              React.createElement('nav', { className: "-mb-px flex space-x-6", "aria-label": "Tabs" },
+                React.createElement('button', { onClick: () => setActiveTab('comments'), className: `${activeTab === 'comments' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm` }, React.createElement(ChatBubbleLeftRightIcon, { className: "h-5 w-5 mr-2 inline" }), ` Comments (${ticket.comments.length})`),
+                React.createElement('button', { onClick: () => setActiveTab('history'), className: `${activeTab === 'history' ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-500'} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm` }, React.createElement(ClockIcon, { className: "h-5 w-5 mr-2 inline" }), ` History (${ticket.history.length})`)
+              )
+            ),
+            React.createElement('div', { className: "mt-4" },
+              activeTab === 'comments' && (
+                React.createElement('div', { className: "space-y-4" },
+                  React.createElement('div', { className: "max-h-64 overflow-y-auto pr-2 space-y-4" },
+                    ticket.comments.length > 0 ? [...ticket.comments].reverse().map(comment => (
+                      React.createElement('div', { key: comment.id, className: "flex items-start space-x-3" },
+                        React.createElement('div', { className: "flex-shrink-0" }, React.createElement(UserCircleIcon, { className: "h-8 w-8 text-gray-400" })),
+                        React.createElement('div', { className: "min-w-0 flex-1 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg" },
+                          React.createElement('p', { className: "text-sm font-medium text-gray-900 dark:text-white" }, comment.user?.name || 'Unknown User'),
+                          React.createElement('p', { className: "text-sm text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-wrap" }, comment.text),
+                          React.createElement('p', { className: "text-xs text-gray-500 dark:text-gray-400 mt-2" }, new Date(comment.timestamp).toLocaleString())
+                        )
+                      )
+                    )) : React.createElement('p', { className: "text-sm text-gray-500 dark:text-gray-400 text-center py-4" }, "No comments yet.")
+                  ),
+                  ticket.status !== Status.CLOSED && (
+                    React.createElement('div', { className: "pt-4 border-t border-gray-200 dark:border-gray-700" },
+                      React.createElement('textarea', { rows: 3, value: newComment, onChange: e => setNewComment(e.target.value), placeholder: "Add a comment...", className: "block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" }),
+                      React.createElement('div', { className: "mt-2 flex justify-end" }, React.createElement('button', { onClick: handleAddComment, className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700" }, "Post Comment"))
+                    )
+                  )
+                )
+              ),
+              activeTab === 'history' && (
+                React.createElement('ul', { className: "space-y-3" },
+                  [...ticket.history].reverse().map((event, index) => (
+                    React.createElement('li', { key: index, className: "flex items-start" },
+                      React.createElement('div', { className: "flex-shrink-0" }, React.createElement('div', { className: `h-2 w-2 rounded-full mt-1.5 ${statusStylesModal[event.status].bg}` })),
+                      React.createElement('div', { className: "ml-3" },
+                        React.createElement('p', { className: "text-sm text-gray-700 dark:text-gray-300" }, "Status changed to ", React.createElement('span', { className: `font-medium ${statusStylesModal[event.status].text}` }, event.status), " by ", event.updatedBy?.name || 'Unknown User', "."),
+                        React.createElement('p', { className: "text-xs text-gray-500 dark:text-gray-400" }, new Date(event.timestamp).toLocaleString())
+                      )
+                    )
+                  ))
+                )
+              )
+            )
+          )
+        ),
+        React.createElement('footer', { className: "flex flex-wrap items-center justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+          canAssignToSelf && React.createElement('button', { onClick: () => assignTicketToSelf(ticket.id), className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Assign to Me"),
+          isAssignmentChanged && canManageAssignment && React.createElement('button', { onClick: handleSaveAssignment, className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700" }, "Save Assignment"),
+          canStartProgress && React.createElement('button', { onClick: () => updateTicketStatus(ticket.id, Status.IN_PROGRESS), className: "rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700" }, "Start Progress"),
+          canMarkAsComplete && React.createElement('button', { onClick: () => updateTicketStatus(ticket.id, Status.COMPLETED), className: "rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700" }, "Mark as Complete"),
+          canRequestClosure && React.createElement('button', { onClick: () => requestTicketClosure(ticket.id), className: "rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-yellow-600" }, "Request Closure"),
+          canApproveRejectClosure && (showRejectionInput ? (
+            React.createElement('div', { className: "w-full flex items-center gap-2" },
+              React.createElement('input', { type: "text", value: rejectionReason, onChange: e => setRejectionReason(e.target.value), placeholder: "Reason for rejection...", className: "block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm sm:text-sm text-gray-900 dark:text-white" }),
+              React.createElement('button', { onClick: handleRejectClosure, className: "rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700" }, "Confirm Reject"),
+              React.createElement('button', { onClick: () => setShowRejectionInput(false), className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500" }, "Cancel")
+            )
+          ) : (
+            React.createElement(React.Fragment, null,
+              React.createElement('button', { onClick: () => setShowRejectionInput(true), className: "flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700" }, React.createElement(XCircleIcon, { className: "h-5 w-5 mr-2" }), "Reject Closure"),
+              React.createElement('button', { onClick: () => approveTicketClosure(ticket.id), className: "flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700" }, React.createElement(CheckCircleIcon, { className: "h-5 w-5 mr-2" }), "Approve Closure")
+            )
+          )),
+          React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Close")
+        )
+      )
+    )
+  );
+};
+
+const CreateTicketModal = ({ isOpen, onClose }) => {
+  const context = useContext(AppContext);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState(Category.MAINTENANCE);
+  const [priority, setPriority] = useState('Medium');
+  const [clusterManagerId, setClusterManagerId] = useState('');
+
+  const clusterManagers = useMemo(() => (context?.users || []).filter(u => u.role === Role.CLUSTER_MANAGER), [context?.users]);
+
+  const resetState = useCallback(() => {
+    setTitle('');
+    setDescription('');
+    setCategory(Category.MAINTENANCE);
+    setPriority('Medium');
+    setClusterManagerId(clusterManagers.length > 0 ? clusterManagers[0].id : '');
+  }, [clusterManagers]);
+
+  useEffect(() => {
+    if (isOpen && clusterManagers.length > 0 && !clusterManagerId) {
+        setClusterManagerId(clusterManagers[0].id);
+    }
+  }, [isOpen, clusterManagers, clusterManagerId]);
+
+  if (!context || !isOpen) return null;
+  const { currentUser, createTicket } = context;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!title || !description || !currentUser.store || !clusterManagerId) {
+      alert('Please fill all fields and select a cluster manager.');
+      return;
+    }
+
+    const ticketId = `TICKET-${String(Date.now()).slice(-4)}`;
+    
+    createTicket({
+      id: ticketId,
+      title,
+      description,
+      category,
+      priority,
+      raisedBy: currentUser.id,
+      store: currentUser.store,
+      assignedClusterManager: clusterManagerId,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    
+    resetState();
+    onClose();
+  };
+
+  return (
+    React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg", onClick: e => e.stopPropagation() },
+        React.createElement('header', { className: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" },
+          React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, "Raise a New Ticket"),
+          React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600" }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
+        ),
+        React.createElement('form', { onSubmit: handleSubmit },
+          React.createElement('main', { className: "p-6 space-y-4" },
+            React.createElement('div', null,
+              React.createElement('label', { htmlFor: "title", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Title"),
+              React.createElement('input', { type: "text", id: "title", value: title, onChange: e => setTitle(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+            ),
+            React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" },
+              React.createElement('div', null,
+                React.createElement('label', { htmlFor: "category", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Category"),
+                React.createElement('select', { id: "category", value: category, onChange: e => setCategory(e.target.value), className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" },
+                  Object.values(Category).map(cat => React.createElement('option', { key: cat, value: cat }, cat))
+                )
+              ),
+              React.createElement('div', null,
+                React.createElement('label', { htmlFor: "priority", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Priority"),
+                React.createElement('select', { id: "priority", value: priority, onChange: e => setPriority(e.target.value), className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" },
+                  React.createElement('option', { value: "Low" }, "Low"),
+                  React.createElement('option', { value: "Medium" }, "Medium"),
+                  React.createElement('option', { value: "High" }, "High")
+                )
+              )
+            ),
+            React.createElement('div', null,
+              React.createElement('label', { htmlFor: "clusterManager", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Choose your Cluster Manager"),
+              React.createElement('select', { id: "clusterManager", value: clusterManagerId, onChange: e => setClusterManagerId(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" },
+                React.createElement('option', { disabled: true, value: "" }, "Select a manager..."),
+                clusterManagers.map(cm => React.createElement('option', { key: cm.id, value: cm.id }, `${cm.name} (${cm.cluster})`))
+              )
+            ),
+            React.createElement('div', null,
+              React.createElement('label', { htmlFor: "description", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Description"),
+              React.createElement('textarea', { id: "description", rows: 4, value: description, onChange: e => setDescription(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+            )
+          ),
+          React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+            React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Cancel"),
+            React.createElement('button', { type: "submit", className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" }, 'Submit Ticket')
+          )
+        )
+      )
+    )
+  );
+};
+
+const TicketList = ({ tickets }) => {
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const handleViewDetails = (ticket) => setSelectedTicket(ticket);
+  const handleCloseModal = () => setSelectedTicket(null);
+
+  if (tickets.length === 0) {
+    return (
+      React.createElement('div', { className: "text-center py-12 bg-white dark:bg-gray-800 rounded-lg shadow" },
+        React.createElement(TicketIcon, { className: "mx-auto h-12 w-12 text-gray-400" }),
+        React.createElement('h3', { className: "mt-2 text-sm font-medium text-gray-900 dark:text-white" }, "No tickets found"),
+        React.createElement('p', { className: "mt-1 text-sm text-gray-500 dark:text-gray-400" }, "Try adjusting your search or filters.")
+      )
+    );
+  }
+  return (
+    React.createElement(React.Fragment, null,
+      React.createElement('div', { className: "grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" },
+        tickets.map(ticket => React.createElement(TicketItem, { key: ticket.id, ticket: ticket, onViewDetails: handleViewDetails }))
+      ),
+      selectedTicket && React.createElement(TicketDetailsModal, { isOpen: !!selectedTicket, onClose: handleCloseModal, ticket: selectedTicket })
+    )
+  );
+};
+
+const DeleteTicketsModal = ({ isOpen, onClose, onDelete }) => {
+    const [selectedStatuses, setSelectedStatuses] = useState([]);
+
+    if (!isOpen) return null;
+
+    const handleCheckboxChange = (status, isChecked) => {
+        if (isChecked) {
+            setSelectedStatuses(prev => [...prev, status]);
+        } else {
+            setSelectedStatuses(prev => prev.filter(s => s !== status));
+        }
+    };
+
+    const handleSelectAll = (isChecked) => {
+        if (isChecked) {
+            setSelectedStatuses(Object.values(Status));
+        } else {
+            setSelectedStatuses([]);
+        }
+    };
+    
+    const handleDelete = () => {
+        if (selectedStatuses.length === 0) {
+            alert("Please select at least one status to delete.");
+            return;
+        }
+        onDelete(selectedStatuses);
+        onClose();
+    };
+
+    const allSelected = selectedStatuses.length === Object.values(Status).length;
+
+    return (
+      React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
+        React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md", onClick: e => e.stopPropagation() },
+          React.createElement('header', { className: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" },
+            React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, "Delete Tickets by Status"),
+            React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600" }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
+          ),
+          React.createElement('main', { className: "p-6" },
+            React.createElement('p', { className: "text-sm text-gray-600 dark:text-gray-300 mb-4" }, "Select the ticket statuses you wish to permanently delete. This action cannot be undone."),
+            React.createElement('div', { className: "space-y-4" },
+              React.createElement('fieldset', null,
+                React.createElement('div', { className: "grid grid-cols-2 gap-4" },
+                  Object.values(Status).map(status => (
+                    React.createElement('label', { key: status, className: "flex items-center space-x-3" },
+                      React.createElement('input', {
+                        type: "checkbox",
+                        checked: selectedStatuses.includes(status),
+                        onChange: e => handleCheckboxChange(status, e.target.checked),
+                        className: "h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      }),
+                      React.createElement('span', { className: "text-sm text-gray-700 dark:text-gray-300" }, status)
+                    )
+                  ))
+                )
+              ),
+               React.createElement('div', { className: "border-t border-gray-200 dark:border-gray-700 pt-4" },
+                  React.createElement('label', { className: "flex items-center space-x-3" },
+                    React.createElement('input', {
+                      type: "checkbox",
+                      checked: allSelected,
+                      onChange: e => handleSelectAll(e.target.checked),
+                      className: "h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    }),
+                    React.createElement('span', { className: "text-sm font-medium text-gray-700 dark:text-gray-300" }, "Select All")
+                  )
+               )
+            )
+          ),
+          React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+            React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Cancel"),
+            React.createElement('button', { type: "button", onClick: handleDelete, className: "rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:bg-red-400 disabled:cursor-not-allowed", disabled: selectedStatuses.length === 0 }, `Delete (${selectedStatuses.length})`)
+          )
+        )
+      )
+    );
+};
+
+const Dashboard = () => {
+  const context = useContext(AppContext);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [clusterFilter, setClusterFilter] = useState('ALL');
+  const [specialistFilter, setSpecialistFilter] = useState('ALL');
+  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
+  const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  if (!context) return null;
+  const { users, tickets, currentUser, deleteTicketsByStatus} = context;
+
+  const clusterManagers = useMemo(() => (users || []).filter(u => u.role === Role.CLUSTER_MANAGER), [users]);
+  const departmentSpecialists = useMemo(() => (users || []).filter(u => u.role === Role.DEPARTMENT_SPECIALIST), [users]);
+
+  const filteredTickets = useMemo(() => {
+    return (tickets || [])
+      .filter(ticket => statusFilter === 'ALL' ? true : ticket.status === statusFilter)
+      .filter(ticket => clusterFilter === 'ALL' ? true : ticket.assignedClusterManager?.id === clusterFilter)
+      .filter(ticket => specialistFilter === 'ALL' ? true : ticket.assignedTo?.id === specialistFilter)
+      .filter(ticket => ticket.title.toLowerCase().includes(searchQuery.toLowerCase()) || ticket.id.toLowerCase().includes(searchQuery.toLowerCase()));
+  }, [tickets, statusFilter, clusterFilter, specialistFilter, searchQuery]);
+
+
+  const handleDownloadCSV = () => {
+    const pendingStatuses = [Status.RAISED, Status.ASSIGNED, Status.IN_PROGRESS, Status.PENDING_CLOSURE];
+    const ticketsToExport = filteredTickets.filter(ticket => pendingStatuses.includes(ticket.status));
+    if (ticketsToExport.length === 0) {
+      alert("No pending tickets to export based on current filters.");
+      return;
+    }
+    const headers = ['ID', 'Title', 'Status', 'Priority', 'Category', 'Store', 'Raised By', 'Assigned To', 'Cluster Manager', 'Created At'];
+    const csvRows = [headers.join(',')];
+    for (const ticket of ticketsToExport) {
+      const row = [
+        ticket.id, 
+        `"${ticket.title.replace(/"/g, '""')}"`, 
+        ticket.status, 
+        ticket.priority, 
+        ticket.category, 
+        ticket.store, 
+        ticket.raisedBy?.name || 'N/A', 
+        ticket.assignedTo?.name || 'Unassigned', 
+        ticket.assignedClusterManager?.name || 'N/A', 
+        new Date(ticket.createdAt).toISOString()
+      ].join(',');
+      csvRows.push(row);
+    }
+    const csvString = csvRows.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'pending_tickets.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+  
+  const handleTriggerDelete = (statuses) => {
+    deleteTicketsByStatus(statuses);
+  };
+
+  return (
+    React.createElement(React.Fragment, null,
+      React.createElement('div', { className: "space-y-6" },
+        React.createElement('div', { className: "flex flex-col md:flex-row items-center justify-between gap-4" },
+          React.createElement('div', null,
+            React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Ticket Dashboard"),
+            React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, `Welcome, ${currentUser.name}. Here are your tickets.`)
+          ),
+          React.createElement('div', { className: "flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto" },
+            currentUser.role === Role.STORE_MANAGER && React.createElement('button', { onClick: () => setCreateModalOpen(true), className: "inline-flex items-center justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 w-full" }, React.createElement(PlusIcon, { className: "h-5 w-5 mr-2" }), "Raise New Ticket"),
+            (currentUser.role === Role.ADMIN || currentUser.role === Role.OPERATIONS_HEAD) && React.createElement('button', { onClick: handleDownloadCSV, className: "inline-flex items-center justify-center rounded-md bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 w-full" }, React.createElement(ArrowDownTrayIcon, { className: "h-5 w-5 mr-2" }), "Download CSV"),
+            currentUser.role === Role.ADMIN && React.createElement('button', { onClick: () => setDeleteModalOpen(true), className: "inline-flex items-center justify-center rounded-md bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-medium text-white shadow-sm w-full" }, React.createElement(TrashIcon, { className: "h-5 w-5 mr-2" }), "Delete Tickets")
+          )
+        ),
+        React.createElement('div', { className: "bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm" },
+          React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" },
+            React.createElement('div', { className: "relative lg:col-span-1" },
+              React.createElement('div', { className: "pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3" }, React.createElement(SearchIcon, { className: "h-5 w-5 text-gray-400" })),
+              React.createElement('input', { type: "text", placeholder: "Search by title or ID...", value: searchQuery, onChange: (e) => setSearchQuery(e.target.value), className: "block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 text-gray-900 dark:text-white" })
+            ),
+            React.createElement('div', { className: "lg:col-span-1" },
+              React.createElement('select', { id: "statusFilter", value: statusFilter, onChange: (e) => setStatusFilter(e.target.value), className: "block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 text-gray-900 dark:text-white" },
+                React.createElement('option', { value: "ALL" }, "All Statuses"),
+                Object.values(Status).map(s => React.createElement('option', { key: s, value: s }, s))
+              )
+            ),
+            (currentUser.role === Role.ADMIN || currentUser.role === Role.OPERATIONS_HEAD) && (
+              React.createElement(React.Fragment, null,
+                React.createElement('div', { className: "lg:col-span-1" },
+                  React.createElement('select', { id: "clusterFilter", value: clusterFilter, onChange: (e) => setClusterFilter(e.target.value), className: "block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 text-gray-900 dark:text-white" },
+                    React.createElement('option', { value: "ALL" }, "All Clusters"),
+                    clusterManagers.map(cm => React.createElement('option', { key: cm.id, value: cm.id }, cm.name))
+                  )
+                ),
+                React.createElement('div', { className: "lg:col-span-1" },
+                  React.createElement('select', { id: "specialistFilter", value: specialistFilter, onChange: (e) => setSpecialistFilter(e.target.value), className: "block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm py-2 text-gray-900 dark:text-white" },
+                    React.createElement('option', { value: "ALL" }, "All Specialists"),
+                    departmentSpecialists.map(ds => React.createElement('option', { key: ds.id, value: ds.id }, ds.name))
+                  )
+                )
+              )
+            )
+          )
+        ),
+        React.createElement(TicketList, { tickets: filteredTickets })
+      ),
+      React.createElement(CreateTicketModal, { isOpen: isCreateModalOpen, onClose: () => setCreateModalOpen(false) }),
+      currentUser.role === Role.ADMIN && React.createElement(DeleteTicketsModal, { isOpen: isDeleteModalOpen, onClose: () => setDeleteModalOpen(false), onDelete: handleTriggerDelete })
+    )
+  );
+};
+
+const UserModal = ({ isOpen, onClose, userToEdit }) => {
+  const context = useContext(AppContext);
+  const [name, setName] = useState('');
+  const [role, setRole] = useState(Role.STORE_MANAGER);
+  const [email, setEmail] = useState('');
+  const [store, setStore] = useState('');
+  const [cluster, setCluster] = useState('');
+  const [password, setPassword] = useState('');
+  const isEditing = !!userToEdit;
+
+  useEffect(() => {
+    if (isOpen) {
+        if (isEditing) {
+          setName(userToEdit.name);
+          setRole(userToEdit.role);
+          setEmail(userToEdit.email || '');
+          setStore(userToEdit.store || '');
+          setCluster(userToEdit.cluster || '');
+          setPassword(''); 
+        } else {
+          setName('');
+          setRole(Role.STORE_MANAGER);
+          setEmail('');
+          setStore('');
+          setCluster('');
+          setPassword('');
+        }
+    }
+  }, [userToEdit, isEditing, isOpen]);
+
+  if (!context || !isOpen) return null;
+  const { createUser, updateUser, changePassword } = context;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!name || !email) return;
+    if (!isEditing && !password) {
+        alert("Please set an initial password for the new user.");
+        return;
+    }
+
+    const userData = {
+      name,
+      role,
+      email,
+      store: role === Role.STORE_MANAGER ? store : null,
+      cluster: role === Role.CLUSTER_MANAGER ? cluster : null,
+    };
+
+    if (isEditing) {
+      updateUser(userToEdit.id, userData);
+      if (password) {
+          changePassword(userToEdit.id, password);
+      }
+    } else {
+      createUser(userData, password);
+    }
+    onClose();
+  };
+  
+  const handleRoleChange = (e) => {
+    const newRole = e.target.value;
+    setRole(newRole);
+    if (newRole !== Role.STORE_MANAGER) setStore('');
+    if (newRole !== Role.CLUSTER_MANAGER) setCluster('');
+  };
+
+  return (
+    React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md", onClick: e => e.stopPropagation() },
+        React.createElement('header', { className: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" },
+          React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, isEditing ? 'Edit User' : 'Add New User'),
+          React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600" }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
+        ),
+        React.createElement('form', { onSubmit: handleSubmit },
+          React.createElement('main', { className: "p-6 space-y-4" },
+            React.createElement('div', null,
+              React.createElement('label', { htmlFor: "name", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Full Name (Username)"),
+              React.createElement('input', { type: "text", id: "name", value: name, onChange: e => setName(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+            ),
+             React.createElement('div', null,
+              React.createElement('label', { htmlFor: "email", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Email Address"),
+              React.createElement('input', { type: "email", id: "email", value: email, onChange: e => setEmail(e.target.value), placeholder: "user@example.com", required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+            ),
+            React.createElement('div', null,
+              React.createElement('label', { htmlFor: "password", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, isEditing ? "New Password (optional)" : "Password"),
+              React.createElement('input', { type: "password", id: "password", value: password, onChange: e => setPassword(e.target.value), required: !isEditing, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+            ),
+            React.createElement('div', null,
+              React.createElement('label', { htmlFor: "role", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Role"),
+              React.createElement('select', { id: "role", value: role, onChange: handleRoleChange, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" },
+                Object.values(Role).map(r => React.createElement('option', { key: r, value: r }, r))
+              )
+            ),
+            role === Role.STORE_MANAGER && React.createElement('div', null,
+              React.createElement('label', { htmlFor: "store", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Store Name"),
+              React.createElement('input', { type: "text", id: "store", value: store, onChange: e => setStore(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+            ),
+            role === Role.CLUSTER_MANAGER && React.createElement('div', null,
+              React.createElement('label', { htmlFor: "cluster", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Cluster Name"),
+              React.createElement('input', { type: "text", id: "cluster", value: cluster, onChange: e => setCluster(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+            )
+          ),
+          React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+            React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Cancel"),
+            React.createElement('button', { type: "submit", className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" }, isEditing ? 'Save Changes' : 'Create User')
+          )
+        )
+      )
+    )
+  );
+};
+
+const UserManagement = () => {
+  const context = useContext(AppContext);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  
+  if (!context) return null;
+  
+  const departmentSpecialists = useMemo(() => {
+    return (context?.users || []).filter(user => user.role === Role.DEPARTMENT_SPECIALIST);
+  }, [context?.users]);
+  
+  const { users, deleteUser, categoryAssignments, updateCategoryAssignment, appPermissions, updateAppPermission, resetUserPassword } = context;
+  
+  const handleOpenModal = (user = null) => {
+    setEditingUser(user);
+    setIsModalOpen(true);
+  };
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingUser(null);
+  };
+  const handleDeleteUser = (userId) => {
+    if (window.confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      deleteUser(userId);
+    }
+  };
+
+  const handleResetPassword = (userId, userName) => {
+      if (window.confirm(`Are you sure you want to reset the password for ${userName}? The new password will be 'password'.`)) {
+        resetUserPassword(userId);
+      }
+  };
+
+  return (
+    React.createElement(React.Fragment, null,
+      React.createElement('div', { className: "space-y-8" },
+        React.createElement('div', null,
+          React.createElement('div', { className: "flex flex-col md:flex-row items-center justify-between gap-4 mb-6" },
+            React.createElement('div', null,
+              React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "User Management"),
+              React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, "Add, edit, or remove users from the system.")
+            ),
+            React.createElement('button', { onClick: () => handleOpenModal(), className: "inline-flex items-center justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800" },
+              React.createElement(PlusIcon, { className: "h-5 w-5 mr-2" }), "Add New User"
+            )
+          ),
+          React.createElement('div', { className: "bg-white dark:bg-gray-800 shadow-sm rounded-lg overflow-hidden" },
+            React.createElement('div', { className: "overflow-x-auto" },
+              React.createElement('table', { className: "min-w-full divide-y divide-gray-200 dark:divide-gray-700" },
+                React.createElement('thead', { className: "bg-gray-50 dark:bg-gray-700" },
+                  React.createElement('tr', null,
+                    React.createElement('th', { scope: "col", className: "px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" }, "Name"),
+                    React.createElement('th', { scope: "col", className: "px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" }, "Role"),
+                    React.createElement('th', { scope: "col", className: "px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider" }, "Assignment"),
+                    React.createElement('th', { scope: "col", className: "relative px-6 py-3" }, React.createElement('span', { className: "sr-only" }, "Actions"))
+                  )
+                ),
+                React.createElement('tbody', { className: "bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700" },
+                  users.length > 0 ? users.map(user => React.createElement('tr', { key: user.id },
+                    React.createElement('td', { className: "px-6 py-4 whitespace-nowrap" },
+                      React.createElement('div', { className: "text-sm font-medium text-gray-900 dark:text-white" }, user.name),
+                      React.createElement('div', { className: "text-sm text-gray-500 dark:text-gray-400" }, user.email)
+                    ),
+                    React.createElement('td', { className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" }, user.role),
+                    React.createElement('td', { className: "px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300" }, user.store || user.cluster || 'N/A'),
+                    React.createElement('td', { className: "px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2" },
+                      React.createElement('button', { onClick: () => handleResetPassword(user.id, user.name), className: "text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-200 p-1", title: "Reset Password" }, React.createElement(KeyIcon, { className: "h-5 w-5" })),
+                      React.createElement('button', { onClick: () => handleOpenModal(user), className: "text-primary-600 hover:text-primary-900 dark:text-primary-400 dark:hover:text-primary-200 p-1", title: "Edit User" }, React.createElement(PencilIcon, { className: "h-5 w-5" })),
+                      React.createElement('button', { onClick: () => handleDeleteUser(user.id), className: "text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200 p-1", title: "Delete User" }, React.createElement(TrashIcon, { className: "h-5 w-5" }))
+                    )
+                  )) : React.createElement('tr', null,
+                    React.createElement('td', { colSpan: 4, className: "text-center py-12" },
+                      React.createElement(UsersIcon, { className: "mx-auto h-12 w-12 text-gray-400" }),
+                      React.createElement('h3', { className: "mt-2 text-sm font-medium text-gray-900 dark:text-white" }, "No users found"),
+                      React.createElement('p', { className: "mt-1 text-sm text-gray-500 dark:text-gray-400" }, "Click \"Add New User\" to get started.")
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+        React.createElement('div', null,
+          React.createElement('div', { className: "mb-6" },
+            React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Category Assignments"),
+            React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, "Assign multiple specialists to each category for team-based ticket routing.")
+          ),
+          React.createElement('div', { className: "bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6" },
+            React.createElement('div', { className: "space-y-6" },
+              Object.values(Category).map(category => React.createElement('div', { key: category, className: "border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0" },
+                React.createElement('div', { className: "flex items-center mb-4" },
+                  React.createElement(TagIcon, { className: "h-5 w-5 text-gray-400 mr-3" }),
+                  React.createElement('h3', { className: "text-lg font-medium text-gray-800 dark:text-gray-200" }, category)
+                ),
+                React.createElement('div', { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" },
+                  departmentSpecialists.map(specialist => React.createElement('label', { key: specialist.id, className: "flex items-center space-x-3" },
+                    React.createElement('input', {
+                      type: "checkbox",
+                      checked: categoryAssignments[category]?.includes(specialist.id) || false,
+                      onChange: (e) => updateCategoryAssignment(category, specialist.id, e.target.checked),
+                      className: "h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    }),
+                    React.createElement('span', { className: "text-sm text-gray-700 dark:text-gray-300" }, specialist.name)
+                  ))
+                )
+              ))
+            ),
+            departmentSpecialists.length === 0 && React.createElement('p', { className: "text-sm text-gray-500 dark:text-gray-400 text-center py-4" }, "No \"Department Specialist\" users found. Please add users with this role to assign them to categories.")
+          )
+        ),
+        React.createElement('div', null,
+          React.createElement('div', { className: "mb-6" },
+            React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Application Access Control"),
+            React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, "Control which individual users can access other integrated applications.")
+          ),
+          React.createElement('div', { className: "bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6" },
+              React.createElement('div', { className: "space-y-6" },
+                  Object.entries(SWITCHABLE_APPS).map(([appId, appDetails]) => React.createElement('div', { key: appId, className: "border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0" },
+                      React.createElement('div', { className: "flex items-center mb-4" },
+                          React.createElement(appDetails.icon, { className: "h-5 w-5 text-gray-400 mr-3" }),
+                          React.createElement('h3', { className: "text-lg font-medium text-gray-800 dark:text-gray-200" }, appDetails.name)
+                      ),
+                      React.createElement('div', { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" },
+                          users.map(user => React.createElement('label', { key: user.id, className: "flex items-center space-x-3" },
+                              React.createElement('input', {
+                                  type: "checkbox",
+                                  checked: appPermissions[appId]?.includes(user.id) || false,
+                                  onChange: (e) => updateAppPermission(appId, user.id, e.target.checked),
+                                  className: "h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                              }),
+                              React.createElement('span', { className: "text-sm text-gray-700 dark:text-gray-300" }, user.name)
+                          ))
+                      )
+                  ))
+              )
+          )
+        )
+      ),
+      isModalOpen && React.createElement(UserModal, { isOpen: isModalOpen, onClose: handleCloseModal, userToEdit: editingUser })
+    )
+  );
+};
+
+const COLORS = ['#EF4444', '#3B82F6', '#EAB308', '#22C55E', '#8B5CF6', '#6B7280'];
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  if (percent === 0) return null;
+  return React.createElement('text', { x: x, y: y, fill: "white", textAnchor: x > cx ? 'start' : 'end', dominantBaseline: "central" }, `${(percent * 100).toFixed(0)}%`);
+};
+const AdminAnalytics = () => {
+  const context = useContext(AppContext);
+
+  const ticketsByStatus = useMemo(() => {
+    const statusCounts = Object.values(Status).reduce((acc, status) => {
+      acc[status] = 0;
+      return acc;
+    }, {});
+    (context?.allTickets || []).forEach(ticket => {
+      statusCounts[ticket.status]++;
+    });
+    const orderedStatuses = [Status.RAISED, Status.ASSIGNED, Status.IN_PROGRESS, Status.COMPLETED, Status.PENDING_CLOSURE, Status.CLOSED];
+    return orderedStatuses.map(status => ({ name: status, value: statusCounts[status] }));
+  }, [context?.allTickets]);
+
+  const ticketsByCluster = useMemo(() => {
+    const clusterManagers = (context?.users || []).filter(u => u.role === Role.CLUSTER_MANAGER);
+    const clusterCounts = {};
+    clusterManagers.forEach(cm => {
+      if (cm.cluster) clusterCounts[cm.cluster] = { total: 0, closed: 0 };
+    });
+    (context?.allTickets || []).forEach(ticket => {
+      const clusterManager = context.users.find(u => u.id === ticket.assignedClusterManager?.id);
+      const clusterName = clusterManager?.cluster;
+      if (clusterName && clusterCounts[clusterName]) {
+        clusterCounts[clusterName].total++;
+        if (ticket.status === Status.CLOSED) {
+          clusterCounts[clusterName].closed++;
+        }
+      }
+    });
+    return Object.entries(clusterCounts).map(([name, data]) => ({ name, ...data }));
+  }, [context?.allTickets, context?.users]);
+
+  if (!context) return null;
+  const { allTickets } = context;
+  const totalTickets = allTickets.length;
+  const openTickets = allTickets.filter(t => t.status !== Status.CLOSED).length;
+  return React.createElement('div', { className: "space-y-6" },
+    React.createElement('div', null,
+      React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Performance Analytics"),
+      React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, "An overview of ticket resolution and performance metrics.")
+    ),
+    React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" },
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm" },
+        React.createElement('h3', { className: "text-sm font-medium text-gray-500 dark:text-gray-400" }, "Total Tickets"),
+        React.createElement('p', { className: "mt-2 text-3xl font-bold text-gray-900 dark:text-white" }, totalTickets)
+      ),
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm" },
+        React.createElement('h3', { className: "text-sm font-medium text-gray-500 dark:text-gray-400" }, "Open Tickets"),
+        React.createElement('p', { className: "mt-2 text-3xl font-bold text-red-600 dark:text-red-400" }, openTickets)
+      ),
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm" },
+        React.createElement('h3', { className: "text-sm font-medium text-gray-500 dark:text-gray-400" }, "Closed Tickets"),
+        React.createElement('p', { className: "mt-2 text-3xl font-bold text-green-600 dark:text-green-400" }, totalTickets - openTickets)
+      ),
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm" },
+        React.createElement('h3', { className: "text-sm font-medium text-gray-500 dark:text-gray-400" }, "Resolution Rate"),
+        React.createElement('p', { className: "mt-2 text-3xl font-bold text-primary-600 dark:text-primary-400" }, totalTickets > 0 ? `${(((totalTickets - openTickets) / totalTickets) * 100).toFixed(1)}%` : 'N/A')
+      )
+    ),
+    React.createElement('div', { className: "grid grid-cols-1 lg:grid-cols-5 gap-6" },
+      React.createElement('div', { className: "lg:col-span-3 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm" },
+        React.createElement('h3', { className: "text-lg font-medium text-gray-900 dark:text-white mb-4" }, "Tickets by Cluster"),
+        React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
+          React.createElement(BarChart, { data: ticketsByCluster },
+            React.createElement(CartesianGrid, { strokeDasharray: "3 3", vertical: false, className: "stroke-gray-200 dark:stroke-gray-700" }),
+            React.createElement(XAxis, { dataKey: "name", className: "text-xs" }),
+            React.createElement(YAxis, { allowDecimals: false, className: "text-xs" }),
+            React.createElement(Tooltip, { contentStyle: { backgroundColor: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(5px)', border: '1px solid #ccc', borderRadius: '0.5rem' } }),
+            React.createElement(Legend, { wrapperStyle: { fontSize: "0.8rem" } }),
+            React.createElement(Bar, { dataKey: "total", fill: "#3b82f6", name: "Total Tickets" }),
+            React.createElement(Bar, { dataKey: "closed", fill: "#22c55e", name: "Closed Tickets" })
+          )
+        )
+      ),
+      React.createElement('div', { className: "lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm" },
+        React.createElement('h3', { className: "text-lg font-medium text-gray-900 dark:text-white mb-4" }, "Tickets by Status"),
+        React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
+          React.createElement(PieChart, null,
+            React.createElement(Pie, { data: ticketsByStatus, cx: "50%", cy: "50%", labelLine: false, label: renderCustomizedLabel, outerRadius: 100, fill: "#8884d8", dataKey: "value" },
+              ticketsByStatus.map((entry, index) => React.createElement(Cell, { key: `cell-${index}`, fill: COLORS[index % COLORS.length] }))
+            ),
+            React.createElement(Tooltip, null),
+            React.createElement(Legend, { iconType: "circle", wrapperStyle: { fontSize: "0.8rem" } })
+          )
+        )
+      )
+    )
+  );
+};
+
+const ChangePasswordModal = ({ isOpen, onPasswordChange }) => {
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isChanging, setIsChanging] = useState(false);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (newPassword.length < 6) {
+            setError("Password must be at least 6 characters long.");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+        setError('');
+        setIsChanging(true);
+        onPasswordChange(newPassword);
+    };
+    
+    return React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center p-4" },
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm" },
+        React.createElement('header', { className: "p-4 border-b border-gray-200 dark:border-gray-700" },
+          React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, "Set New Admin Password")
+        ),
+         React.createElement('p', { className: "p-6 text-sm text-gray-600 dark:text-gray-300" }, "For security, you must set a new password for the Admin account before you can proceed. Your temporary password has been disabled."),
+        React.createElement('form', { onSubmit: handleSubmit },
+          React.createElement('main', { className: "px-6 pb-6 space-y-4" },
+             React.createElement('div', null,
+              React.createElement('label', { htmlFor: "new-password", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "New Password"),
+              React.createElement('input', { type: "password", id: "new-password", value: newPassword, onChange: e => setNewPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm" })
+            ),
+             React.createElement('div', null,
+              React.createElement('label', { htmlFor: "confirm-password", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Confirm New Password"),
+              React.createElement('input', { type: "password", id: "confirm-password", value: confirmPassword, onChange: e => setConfirmPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm" })
+            ),
+            error && React.createElement('p', { className: "text-xs text-red-600 dark:text-red-400" }, error)
+          ),
+          React.createElement('footer', { className: "px-6 pb-6" },
+             React.createElement('button', { type: "submit", disabled: isChanging, className: "w-full rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:bg-primary-400" }, isChanging ? 'Saving...' : 'Set New Password')
+          )
+        )
+      )
+    );
+};
+
+const ChangeOwnPasswordModal = ({ isOpen, onClose, onPasswordChange }) => {
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [isChanging, setIsChanging] = useState(false);
+
+    useEffect(() => {
+        if(isOpen) {
+            setNewPassword('');
+            setConfirmPassword('');
+            setError('');
+            setIsChanging(false);
+        }
+    }, [isOpen]);
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (newPassword.length < 6) {
+            setError("Password must be at least 6 characters long.");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setError("Passwords do not match.");
+            return;
+        }
+        setError('');
+        setIsChanging(true);
+        onPasswordChange(newPassword);
+    };
+    
+    return React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
+      React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md", onClick: e => e.stopPropagation() },
+        React.createElement('header', { className: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" },
+          React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, "Change Your Password"),
+          React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600" }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
+        ),
+        React.createElement('form', { onSubmit: handleSubmit },
+          React.createElement('main', { className: "p-6 space-y-4" },
+             React.createElement('div', null,
+              React.createElement('label', { htmlFor: "new-password-own", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "New Password"),
+              React.createElement('input', { type: "password", id: "new-password-own", value: newPassword, onChange: e => setNewPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm" })
+            ),
+             React.createElement('div', null,
+              React.createElement('label', { htmlFor: "confirm-password-own", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Confirm New Password"),
+              React.createElement('input', { type: "password", id: "confirm-password-own", value: confirmPassword, onChange: e => setConfirmPassword(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm" })
+            ),
+            error && React.createElement('p', { className: "text-xs text-red-600 dark:text-red-400" }, error)
+          ),
+          React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+             React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Cancel"),
+             React.createElement('button', { type: "submit", disabled: isChanging, className: "w-40 justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 disabled:bg-primary-400" }, isChanging ? 'Saving...' : 'Save New Password')
+          )
+        )
+      )
+    );
+};
+
+const Header = () => {
+  const context = useContext(AppContext);
+  const [isSwitchAppOpen, setSwitchAppOpen] = useState(false);
+  const switchAppRef = useRef(null);
+  const [isSupportOpen, setSupportOpen] = useState(false);
+  const supportRef = useRef(null);
+  const [isUserMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+        if (switchAppRef.current && !switchAppRef.current.contains(event.target)) {
+            setSwitchAppOpen(false);
+        }
+        if (supportRef.current && !supportRef.current.contains(event.target)) {
+            setSupportOpen(false);
+        }
+        if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+            setUserMenuOpen(false);
+        }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [switchAppRef, supportRef, userMenuRef]);
+
+  if (!context) return null;
+  const { currentUser, theme, toggleTheme, setActiveView, activeView, logout, setCurrentApplication, appPermissions, openChangePasswordModal } = context;
+
+  const accessibleApps = useMemo(() => {
+    if (!currentUser || !appPermissions) return [];
+    return Object.keys(SWITCHABLE_APPS).filter(appId => appPermissions[appId]?.includes(currentUser.id));
+  }, [currentUser, appPermissions]);
+
+  return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-md z-50" },
+    React.createElement('div', { className: "container mx-auto px-4 sm:px-6 lg:px-1" },
+      React.createElement('div', { className: "flex items-center justify-between py-4" },
+        React.createElement('div', { className: "flex items-center space-x-4 min-w-0" },
+          React.createElement('div', { className: "flex items-center text-primary-600 dark:text-primary-400" },
+            React.createElement('img', { src: "https://www.dropbox.com/scl/fi/j24evqxph97hho8vudvdk/Kasam-Connekt.png?rlkey=yn315abazpiof90yqbcruqk9d&raw=1",alt: "Kasam ConneKT Logo", className: "h-8 flex-shrink-0" }),
+            React.createElement('span', { className: "ml-2 text-xl font-bold whitespace-nowrap truncate" }, "Kasam Connekt")
+          ),
+          currentUser && currentUser.role === Role.ADMIN && React.createElement('nav', { className: "hidden md:flex items-center space-x-2" },
+            React.createElement('button', { onClick: () => setActiveView('dashboard'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'dashboard' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
+              React.createElement(TicketIcon, { className: "h-5 w-5 mr-2" }), "Dashboard"),
+            React.createElement('button', { onClick: () => setActiveView('analytics'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'analytics' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
+              React.createElement(ChartBarIcon, { className: "h-5 w-5 mr-2" }), "Analytics"),
+            React.createElement('button', { onClick: () => setActiveView('userManagement'), className: `flex items-center px-3 py-2 rounded-md text-sm font-medium ${activeView === 'userManagement' ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300' : 'text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}` },
+              React.createElement(UsersIcon, { className: "h-5 w-5 mr-2" }), "Users")
+          )
+        ),
+        React.createElement('div', { className: "flex items-center space-x-2" },
+          currentUser ? (
+            React.createElement('div', { className: "flex items-center space-x-2" },
+                React.createElement('div', { className: "relative", ref: userMenuRef },
+                   React.createElement('button', { onClick: () => setUserMenuOpen(prev => !prev), className: "flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700" },
+                      React.createElement('span', { className: "hidden sm:inline text-sm font-medium text-gray-700 dark:text-gray-200" }, `${currentUser.name}`),
+                      React.createElement(UserCircleIcon, { className: "h-6 w-6 text-gray-500 dark:text-gray-400" })
+                   ),
+                   isUserMenuOpen && React.createElement('div', { className: "origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" },
+                        React.createElement('div', { className: "py-1" },
+                           React.createElement('button', { onClick: () => { openChangePasswordModal(); setUserMenuOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(KeyIcon, { className: "h-5 w-5 mr-3" }), "Change Password"),
+                           React.createElement('button', { onClick: () => { logout(); setUserMenuOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(ArrowLeftOnRectangleIcon, { className: "h-5 w-5 mr-3" }), "Logout")
+                        )
+                   )
+                ),
+                React.createElement('div', { className: "relative", ref: switchAppRef },
+                    React.createElement('button', { onClick: () => setSwitchAppOpen(prev => !prev), className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Switch App" },
+                      React.createElement(SwitchHorizontalIcon, { className: "h-6 w-6" })
+                    ),
+                    isSwitchAppOpen && React.createElement('div', { className: "origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" },
+                        React.createElement('div', { className: "py-1" },
+                            React.createElement('button', { onClick: () => { setActiveView('dashboard'); setCurrentApplication('e-ticket'); setSwitchAppOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(TicketIcon, { className: "h-5 w-5 mr-3" }), 'E-Ticket Dashboard'),
+                            accessibleApps.map(appId => {
+                                const app = SWITCHABLE_APPS[appId];
+                                return React.createElement('button', { key: appId, onClick: () => { setCurrentApplication(appId); setSwitchAppOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(app.icon, { className: "h-5 w-5 mr-3" }), app.name)
+                            })
+                        )
+                    )
+                ),
+            )
+          ) : null,
+          React.createElement('button', { onClick: toggleTheme, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Toggle Theme" },
+            theme === 'light' ? React.createElement(MoonIcon, { className: "h-6 w-6" }) : React.createElement(SunIcon, { className: "h-6 w-6" })
+          ),
+          React.createElement('div', { className: "relative", ref: supportRef },
+              React.createElement('button', { onClick: () => setSupportOpen(prev => !prev), className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Support" },
+                  React.createElement(InformationCircleIcon, { className: "h-6 w-6" })
+              ),
+              isSupportOpen && React.createElement('div', { className: "origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 focus:outline-none" },
+                  React.createElement('div', { className: "p-4" },
+                      React.createElement('p', { className: "text-sm font-semibold text-gray-900 dark:text-white" }, "Developed by"),
+                      React.createElement('p', { className: "text-sm text-gray-600 dark:text-gray-300" }, "Kasam Fashions Accounts Dept."),
+                      React.createElement('p', { className: "text-sm font-semibold text-gray-900 dark:text-white mt-3" }, "Contact Support"),
+                      React.createElement('a', { href: "mailto:accounts@kasamfashions.com", className: "text-sm text-primary-600 dark:text-primary-400 hover:underline" }, "accounts@kasamfashions.com")
+                  )
+              )
+          )
+        )
+      )
+    )
+  );
+};
+
+const MainApp = () => {
+    const { 
+        currentUser, activeView, currentApplication, 
+        isChangePasswordModalOpen, setChangePasswordModalOpen, changePassword,
+        isFirstAdminLogin
+    } = useContext(AppContext);
+
+    const renderView = () => {
+        if (currentApplication !== 'e-ticket') {
+             const appUrl = SWITCHABLE_APPS[currentApplication]?.url || '';
+             return React.createElement('iframe', {
+                    src: appUrl,
+                    className: "w-full h-[calc(100vh-5rem)] border-0",
+                    title: "External App"
+                });
+        }
+
+        switch (activeView) {
+            case 'dashboard': return React.createElement(Dashboard, null);
+            case 'analytics': return currentUser.role === Role.ADMIN ? React.createElement(AdminAnalytics, null) : null;
+            case 'userManagement': return currentUser.role === Role.ADMIN ? React.createElement(UserManagement, null) : null;
+            default: return React.createElement('div', { className: "p-8" }, "View not found");
+        }
+    };
+
+    return (
+        React.createElement('div', { className: "min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300" },
+            React.createElement(Header, null),
+            React.createElement('main', { className: "p-4 sm:p-6 lg:p-8" },
+                renderView()
+            ),
+            
+            React.createElement(ChangeOwnPasswordModal, {
+                isOpen: isChangePasswordModalOpen,
+                onClose: () => setChangePasswordModalOpen(false),
+                onPasswordChange: (newPass) => changePassword(currentUser.id, newPass)
+            }),
+            React.createElement(ChangePasswordModal, {
+                isOpen: isFirstAdminLogin,
+                onPasswordChange: (newPass) => changePassword(currentUser.id, newPass)
+            })
+        )
+    );
+};
+
+const AppContent = () => {
+    const { isLoading, currentUser, handleLogin } = useContext(AppContext);
+
+    if (isLoading) {
+        return React.createElement('div', { className: "flex items-center justify-center min-h-screen bg-gray-900 text-white" },
+                React.createElement('div', { className: "flex flex-col items-center space-y-4" },
+                     React.createElement('div', { className: "animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" }),
+                     React.createElement('p', { className: "animate-pulse" }, "Loading Kasam Connekt...")
+                )
+            );
+    }
+
+    if (!currentUser) {
+        return React.createElement(Login, { onLogin: handleLogin });
+    }
+
+    return React.createElement(MainApp, null);
+};
+
+const App = () => {
+    return React.createElement(AppProvider, null, React.createElement(AppContent, null));
+};
+
+const rootElement = document.getElementById('root');
+if (rootElement) {
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(React.createElement(React.StrictMode, null, React.createElement(App, null)));
+}
+    </script>
+  </body>
+</html>
