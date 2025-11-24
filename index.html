@@ -669,7 +669,7 @@ const AppProvider = ({ children }) => {
 const FloatingElement = ({ children, speed, delay, initialX, initialY, scale, className }) => {
     return (
         React.createElement('div', {
-            className: `absolute pointer-events-none opacity-40 text-blue-900/20 animate-float-slow ${className || ''}`,
+            className: `absolute pointer-events-none opacity-80 text-blue-900/20 animate-float-slow ${className || ''}`,
             style: {
                 left: `${initialX}%`,
                 top: `${initialY}%`,
@@ -813,7 +813,7 @@ const Login = ({ onLogin }) => {
                 ),
                 
                 React.createElement('div', { className: "mt-8 flex items-center justify-center text-xs text-gray-400" },
-                     React.createElement('a', { href: "#", onClick: (e) => { e.preventDefault(); alert('Contact Admin: accounts@kasamfashions.com'); }, className: "hover:text-blue-600 transition-colors" }, "Forgot Password?")
+                     React.createElement('a', { href: "#", onClick: (e) => { e.preventDefault(); alert('Contact Admin: admin@retailops.com'); }, className: "hover:text-blue-600 transition-colors" }, "Forgot Password?")
                 )
             ),
             
@@ -2008,10 +2008,10 @@ const AppContent = () => {
     const { isLoading, currentUser, handleLogin } = useContext(AppContext);
 
     if (isLoading) {
-        return React.createElement('div', { className: "flex items-center justify-center min-h-screen bg-gray-900 text-white" },
+        return React.createElement('div', { className: "flex items-center justify-center min-h-screen bg-White-900 font-sans bold italic text-Black " },
                 React.createElement('div', { className: "flex flex-col items-center space-y-4" },
                      React.createElement('div', { className: "animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" }),
-                     React.createElement('p', { className: "animate-pulse" }, "Loading Kasam Connekt...")
+                     React.createElement('p', { className: "animate-pulse" }, "Connecting to Kasam Connekt...")
                 )
             );
     }
@@ -2035,5 +2035,4 @@ if (rootElement) {
     </script>
   </body>
 </html>
-
 
