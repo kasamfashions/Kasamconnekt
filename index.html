@@ -159,6 +159,11 @@ const XMarkIcon = (props) => (
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M6 18L18 6M6 6l12 12" })
   )
 );
+const EllipsisVerticalIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z" })
+  )
+);
 const ChatBubbleLeftRightIcon = (props) => (
   React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193l-3.72-3.72a1.063 1.063 0 00-1.5 0l-3.72 3.72A2.123 2.123 0 013 16.899v-4.286c0-.97.616-1.813 1.5-2.097m16.5 0a2.123 2.123 0 00-1.5-2.097m-15 0A2.123 2.123 0 013 6.414v-1.872c0-1.136.847-2.1 1.98-2.193l3.72 3.72a1.063 1.063 0 001.5 0l3.72-3.72A2.123 2.123 0 0118 4.542v1.872c0 .97-.616 1.813-1.5 2.097m-15 0m15 0" })
@@ -239,6 +244,66 @@ const Bars3Icon = (props) => (
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" })
   )
 );
+const KebabMenu = ({ menuItems }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            // This is the corrected line
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const toggleMenu = (e) => {
+        e.stopPropagation(); 
+        setIsOpen(!isOpen);
+    };
+
+    return (
+        React.createElement('div', { ref: menuRef, className: "relative inline-block text-left" },
+            // Button with the three dots icon
+            React.createElement('button', {
+                onClick: toggleMenu,
+                className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500",
+                title: "Options"
+            }, React.createElement(EllipsisVerticalIcon, { className: "h-5 w-5" })),
+
+            // Dropdown Menu
+            isOpen && (
+                React.createElement('div', {
+                    className: "origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50",
+                    role: "menu",
+                    'aria-orientation': "vertical",
+                    'aria-labelledby': "options-menu"
+                },
+                    menuItems.map((item, index) => (
+                        React.createElement('a', {
+                            key: index,
+                            href: item.href || '#',
+                            onClick: (e) => {
+                                setIsOpen(false); // Close menu on click
+                                if (item.onClick) {
+                                    e.preventDefault(); 
+                                    item.onClick(e);
+                                }
+                            },
+                            className: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150",
+                            role: "menuitem"
+                        }, item.label)
+                    ))
+                )
+            )
+        )
+    );
+};
 
 // --- Constants ---
 const INITIAL_USERS = [
@@ -737,6 +802,16 @@ const Login = ({ onLogin }) => {
             className: "relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center perspective-1000 p-4",
             style: { perspective: '1000px' }
         },
+        React.createElement('div', { className: "absolute top-4 right-4 z-50" }, 
+        React.createElement(KebabMenu, { 
+            menuItems: [
+                // 🚀 NEW ITEM: Scrap Sale Tracker link using 'href'
+                { label: 'KF Scrap Sale Tracker', href: 'https://kasamfashions.github.io/scrapsale/' }, 
+                { label: 'KF Audit Tool', href: 'https://kasamfashions.github.io/Store_Auditlist/' },
+                
+            ]
+        })
+    ),
             backgroundElements.map((el, idx) => (
                 React.createElement(FloatingElement, { key: idx, speed: el.s, delay: el.d, initialX: el.x, initialY: el.y, scale: el.scale, className: el.hiddenOnMobile ? 'hidden md:block' : '' },
                     React.createElement(el.Icon, { className: "h-12 w-12 text-blue-200 dark:text-blue-800" })
@@ -745,11 +820,9 @@ const Login = ({ onLogin }) => {
 
             React.createElement('div', { className: "absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5" }),
 
-            React.createElement('div', {
-                ref: cardRef,
-                style: cardStyle,
-                className: "relative z-10 w-full max-w-md p-8 bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] ring-1 ring-gray-200"
-            },
+            React.createElement('div', { ref: cardRef, style: cardStyle, className: "relative z-10 w-full max-w-md p-8 bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] ring-1 ring-gray-200" }, 
+
+    // 2. PASTE THE NEW BLOCK HERE (as the first child of the card container):
                 React.createElement('div', { className: "flex flex-col items-center justify-center mb-6" },
                     React.createElement('div', { className: "animate-float-medium mb-4" },
                         React.createElement('img', {
@@ -2035,6 +2108,3 @@ if (rootElement) {
     </script>
   </body>
 </html>
-
-
-
