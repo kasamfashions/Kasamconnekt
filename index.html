@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="./Kasam Connekt.png" />
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/kasamfashions/kasamconnekt/325621f44996603e344dac9f01916e6c0b318eaf/Kasam%20Connekt.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kasam Connekt</title>
     <script src="./Tailwind.js"></script>
@@ -826,7 +825,7 @@ const Login = ({ onLogin }) => {
                 React.createElement('div', { className: "flex flex-col items-center justify-center mb-6" },
                     React.createElement('div', { className: "animate-float-medium mb-4" },
                         React.createElement('img', {
-                            src: "./Kasam Connekt.png",
+                            src: "https://raw.githubusercontent.com/kasamfashions/kasamconnekt/325621f44996603e344dac9f01916e6c0b318eaf/Kasam%20Connekt.png",
                             alt: "Logo",
                             className: "h-20 md:h-24 w-auto drop-shadow-lg"
                         })
@@ -2081,9 +2080,13 @@ const AppContent = () => {
     const { isLoading, currentUser, handleLogin } = useContext(AppContext);
 
     if (isLoading) {
-        return React.createElement('div', { className: "flex items-center justify-center min-h-screen bg-White-900 font-sans bold italic text-Black " },
+        return React.createElement('div', { className: "flex items-center justify-center min-h-screen bg-White-900 font-serif bold text-Black " },
                 React.createElement('div', { className: "flex flex-col items-center space-y-4" },
-                     React.createElement('div', { className: "animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500" }),
+                     React.createElement('img', { 
+                        src: "https://raw.githubusercontent.com/kasamfashions/kasamconnekt/325621f44996603e344dac9f01916e6c0b318eaf/Kasam%20Connekt.png", 
+                        alt: "Loading...",
+                        className: "animate-spin h-12 w-12 object-contain" 
+                     }),
                      React.createElement('p', { className: "animate-pulse" }, "Connecting to Kasam Connekt...")
                 )
             );
@@ -2108,5 +2111,3 @@ if (rootElement) {
     </script>
   </body>
 </html>
-
-
