@@ -243,6 +243,13 @@ const Bars3Icon = (props) => (
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" })
   )
 );
+// Added PhotoIcon
+const PhotoIcon = (props) => (
+  React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
+    React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" })
+  )
+);
+
 const KebabMenu = ({ menuItems }) => {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef(null);
@@ -335,8 +342,9 @@ const SWITCHABLE_APPS = {
         name: 'Kasam Sales Insights',
         url: 'https://kasamfashions.github.io/Kasam-Sales-Insights/',
         icon: ChartBarIcon
-    }
+    } 
 };
+
 
 // --- Firebase ---
 const firebaseConfig = {
@@ -609,6 +617,10 @@ const AppProvider = ({ children }) => {
     }
   };
   
+  const deleteTicket = (ticketId) => {
+      db.collection('tickets').doc(ticketId).delete();
+  };
+
   const assignTicketToSelf = (ticketId) => {
     const historyEvent = { status: Status.ASSIGNED, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
     db.collection('tickets').doc(ticketId).update({
@@ -719,7 +731,7 @@ const AppProvider = ({ children }) => {
     users, handleLogin, logout, changePassword, activeView, setActiveView, currentApplication, setCurrentApplication, 
     isChangePasswordModalOpen, setChangePasswordModalOpen, isFirstAdminLogin, setFirstAdminLogin,
     categoryAssignments, appPermissions, isLoading, db,
-    resetUserPassword, deleteUser, deleteTicketsByStatus, assignTicketToSelf, assignTicketToSpecialist,
+    resetUserPassword, deleteUser, deleteTicketsByStatus, deleteTicket, assignTicketToSelf, assignTicketToSpecialist,
     requestTicketClosure, approveTicketClosure, rejectTicketClosure, createUser, updateUser, updateCategoryAssignment, updateAppPermission
   };
   
@@ -947,6 +959,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
   const [rejectionReason, setRejectionReason] = useState('');
   const [showRejectionInput, setShowRejectionInput] = useState(false);
   const [selectedSpecialistId, setSelectedSpecialistId] = useState(null);
+  const [isImageModalOpen, setImageModalOpen] = useState(false);
 
   if (!context || !isOpen) return null;
 
@@ -967,7 +980,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
     return context.users.filter(u => u.role === Role.DEPARTMENT_SPECIALIST && specialistIds.includes(u.id));
   }, [context, ticket.category]);
   
-  const { currentUser, addComment, updateTicketStatus, assignTicketToSelf, assignTicketToSpecialist, requestTicketClosure, approveTicketClosure, rejectTicketClosure } = context;
+  const { currentUser, addComment, updateTicketStatus, assignTicketToSelf, assignTicketToSpecialist, requestTicketClosure, approveTicketClosure, rejectTicketClosure, deleteTicket } = context;
   
   const handleAddComment = () => {
     if (newComment.trim()) {
@@ -989,6 +1002,21 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
       assignTicketToSpecialist(ticket.id, selectedSpecialistId);
     }
   };
+  const handleDeleteTicket = () => {
+      if(window.confirm('Are you sure you want to permanently delete this ticket? This action cannot be undone.')) {
+          deleteTicket(ticket.id);
+          onClose();
+      }
+  };
+  const handleDownloadImage = () => {
+    if (!ticket.photo) return;
+    const link = document.createElement('a');
+    link.href = ticket.photo;
+    link.download = `ticket-${ticket.id}-photo.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
   const isCurrentUserSpecialistForCategory = useMemo(() => {
     if (currentUser.role !== Role.DEPARTMENT_SPECIALIST) return false;
     return context.categoryAssignments?.[ticket.category]?.includes(currentUser.id) ?? false;
@@ -1000,7 +1028,8 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
   const canMarkAsComplete = currentUser.id === ticket.assignedTo?.id && ticket.status === Status.IN_PROGRESS;
   const canRequestClosure = (currentUser.id === ticket.raisedBy?.id || currentUser.id === ticket.assignedTo?.id) && ticket.status === Status.COMPLETED;
   const canApproveRejectClosure = [Role.ADMIN, Role.OPERATIONS_HEAD, Role.CLUSTER_MANAGER].includes(currentUser.role) && ticket.status === Status.PENDING_CLOSURE;
-  
+  const canDelete = currentUser.role === Role.ADMIN;
+
   const renderDetailItem = (Icon, label, value) => (
     React.createElement('div', null,
       React.createElement('dt', { className: "text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center" }, React.createElement(Icon, { className: "h-4 w-4 mr-2" }), label),
@@ -1031,6 +1060,8 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
               ),
               React.createElement('div', { className: "col-span-2" }, renderDetailItem(TagIcon, "Category", ticket.category)),
               React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Raised By", `${ticket.raisedBy?.name || '...'} (${ticket.raisedBy?.store || ticket.store})`)),
+              React.createElement('div', { className: "col-span-1" }, renderDetailItem(UserIcon, "EMP ID", ticket.empId || 'N/A')),
+              React.createElement('div', { className: "col-span-1" }, renderDetailItem(UserIcon, "Emp Name", ticket.empName || 'N/A')),
               React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Cluster Manager", ticket.assignedClusterManager?.name || 'N/A')),
               React.createElement('div', { className: "col-span-2" }, renderDetailItem(UserIcon, "Assigned To", canManageAssignment ? (
                 React.createElement('div', { className: "flex items-center gap-2 mt-1" },
@@ -1041,7 +1072,13 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
                 )
               ) : (ticket.assignedTo?.name || 'Unassigned'))),
               React.createElement('div', { className: "col-span-1" }, renderDetailItem(CalendarIcon, "Created On", new Date(ticket.createdAt).toLocaleString())),
-              React.createElement('div', { className: "col-span-1" }, renderDetailItem(CalendarIcon, "Last Updated", new Date(ticket.updatedAt).toLocaleString()))
+              React.createElement('div', { className: "col-span-1" }, renderDetailItem(CalendarIcon, "Last Updated", new Date(ticket.updatedAt).toLocaleString())),
+              ticket.photo && React.createElement('div', { className: "col-span-2" },
+                 React.createElement('dt', { className: "text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center mb-1" }, React.createElement(PhotoIcon, { className: "h-4 w-4 mr-2" }), "Attachment"),
+                 React.createElement('button', { onClick: () => setImageModalOpen(true), className: "text-sm text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-200 underline flex items-center" }, 
+                    React.createElement(PhotoIcon, { className: "h-4 w-4 mr-1" }), "View Photo"
+                 )
+              )
             ),
             React.createElement('div', { className: "space-y-2" },
               React.createElement('h4', { className: "text-sm font-medium text-gray-500 dark:text-gray-400" }, "Description"),
@@ -1095,6 +1132,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
           )
         ),
         React.createElement('footer', { className: "flex flex-wrap items-center justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+          canDelete && React.createElement('button', { onClick: handleDeleteTicket, className: "rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700" }, "Delete Ticket"),
           canAssignToSelf && React.createElement('button', { onClick: () => assignTicketToSelf(ticket.id), className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Assign to Me"),
           isAssignmentChanged && canManageAssignment && React.createElement('button', { onClick: handleSaveAssignment, className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700" }, "Save Assignment"),
           canStartProgress && React.createElement('button', { onClick: () => updateTicketStatus(ticket.id, Status.IN_PROGRESS), className: "rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700" }, "Start Progress"),
@@ -1114,6 +1152,19 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
           )),
           React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Close")
         )
+      ),
+      isImageModalOpen && React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-90 flex items-center justify-center p-4", onClick: () => setImageModalOpen(false) },
+         React.createElement('div', { className: "relative max-w-4xl max-h-[90vh] flex flex-col items-center", onClick: e => e.stopPropagation() },
+            React.createElement('img', { src: ticket.photo, alt: "Ticket Attachment", className: "max-w-full max-h-[80vh] rounded-md object-contain" }),
+            React.createElement('div', { className: "mt-4 flex gap-4" },
+                React.createElement('button', { onClick: handleDownloadImage, className: "flex items-center rounded-md bg-white text-gray-900 px-4 py-2 text-sm font-medium shadow-sm hover:bg-gray-200" },
+                    React.createElement(ArrowDownTrayIcon, { className: "h-5 w-5 mr-2" }), "Download"
+                ),
+                React.createElement('button', { onClick: () => setImageModalOpen(false), className: "flex items-center rounded-md bg-red-600 text-white px-4 py-2 text-sm font-medium shadow-sm hover:bg-red-700" },
+                    React.createElement(XMarkIcon, { className: "h-5 w-5 mr-2" }), "Close"
+                )
+            )
+         )
       )
     )
   );
@@ -1126,6 +1177,10 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
   const [category, setCategory] = useState(Category.MAINTENANCE);
   const [priority, setPriority] = useState('Medium');
   const [clusterManagerId, setClusterManagerId] = useState('');
+  const [photo, setPhoto] = useState(null);
+  const [photoError, setPhotoError] = useState('');
+  const [empId, setEmpId] = useState('');
+  const [empName, setEmpName] = useState('');
 
   const clusterManagers = useMemo(() => (context?.users || []).filter((u) => u.role === Role.CLUSTER_MANAGER), [context?.users]);
 
@@ -1135,6 +1190,10 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
     setCategory(Category.MAINTENANCE);
     setPriority('Medium');
     setClusterManagerId(clusterManagers.length > 0 ? clusterManagers[0].id : '');
+    setPhoto(null);
+    setPhotoError('');
+    setEmpId('');
+    setEmpName('');
   }, [clusterManagers]);
 
   useEffect(() => {
@@ -1146,10 +1205,30 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
   if (!context || !isOpen) return null;
   const { currentUser, createTicket } = context;
 
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 30KB limit (30 * 1024 bytes)
+    if (file.size > 30720) {
+        setPhotoError("Image size exceeds 30KB limit.");
+        setPhoto(null);
+        e.target.value = null; // Reset input
+        return;
+    }
+
+    setPhotoError('');
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        setPhoto(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!title || !description || !currentUser.store || !clusterManagerId) {
-      alert('Please fill all fields and select a cluster manager.');
+    if (!title || !description || !currentUser.store || !clusterManagerId || !empId || !empName) {
+      alert('Please fill all fields, including Employee details, and select a cluster manager.');
       return;
     }
 
@@ -1166,6 +1245,9 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
       assignedClusterManager: clusterManagerId,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      photo: photo,
+      empId,
+      empName
     });
     
     resetState();
@@ -1184,6 +1266,16 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
             React.createElement('div', null,
               React.createElement('label', { htmlFor: "title", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Title"),
               React.createElement('input', { type: "text", id: "title", value: title, onChange: e => setTitle(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+            ),
+             React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" },
+               React.createElement('div', null,
+                React.createElement('label', { htmlFor: "empId", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "EMP ID"),
+                React.createElement('input', { type: "text", id: "empId", value: empId, onChange: e => setEmpId(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+              ),
+              React.createElement('div', null,
+                React.createElement('label', { htmlFor: "empName", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Emp Name"),
+                React.createElement('input', { type: "text", id: "empName", value: empName, onChange: e => setEmpName(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+              )
             ),
             React.createElement('div', { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" },
               React.createElement('div', null,
@@ -1211,6 +1303,12 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
             React.createElement('div', null,
               React.createElement('label', { htmlFor: "description", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Description"),
               React.createElement('textarea', { id: "description", rows: 4, value: description, onChange: e => setDescription(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" })
+            ),
+            React.createElement('div', null,
+               React.createElement('label', { htmlFor: "photo", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Upload Photo (Max 30KB)"),
+               React.createElement('input', { type: "file", id: "photo", accept: "image/*", onChange: handlePhotoChange, className: "mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100" }),
+               photoError && React.createElement('p', { className: "mt-1 text-xs text-red-600" }, photoError),
+               photo && React.createElement('p', { className: "mt-1 text-xs text-green-600" }, "Photo attached successfully.")
             )
           ),
           React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
@@ -1357,7 +1455,7 @@ const Dashboard = () => {
       alert("No pending tickets to export based on current filters.");
       return;
     }
-    const headers = ['ID', 'Title', 'Status', 'Priority', 'Category', 'Store', 'Raised By', 'Assigned To', 'Cluster Manager', 'Created At'];
+    const headers = ['ID', 'Title', 'Status', 'Priority', 'Category', 'Store', 'Raised By', 'Assigned To', 'Cluster Manager', 'Created At', 'Updated At', 'EMP ID', 'Emp Name', 'Description', 'Photo URL'];
     const csvRows = [headers.join(',')];
     for (const ticket of ticketsToExport) {
       const row = [
@@ -1367,10 +1465,15 @@ const Dashboard = () => {
         ticket.priority, 
         ticket.category, 
         ticket.store, 
-        ticket.raisedBy?.name || 'N/A', 
-        ticket.assignedTo?.name || 'Unassigned', 
-        ticket.assignedClusterManager?.name || 'N/A', 
-        new Date(ticket.createdAt).toISOString()
+        `"${(ticket.raisedBy?.name || 'N/A').replace(/"/g, '""')}"`, // Quote names too just in case
+        `"${(ticket.assignedTo?.name || 'Unassigned').replace(/"/g, '""')}"`, 
+        `"${(ticket.assignedClusterManager?.name || 'N/A').replace(/"/g, '""')}"`, 
+        new Date(ticket.createdAt).toISOString(),
+        new Date(ticket.updatedAt).toISOString(),
+        ticket.empId || '',
+        `"${(ticket.empName || '').replace(/"/g, '""')}"`,
+        `"${(ticket.description || '').replace(/"/g, '""')}"`,
+        `"${(ticket.photo || '').replace(/"/g, '""')}"` // Fixed CSV generation for Photo URL
       ].join(',');
       csvRows.push(row);
     }
@@ -1397,7 +1500,7 @@ const Dashboard = () => {
         React.createElement('div', { className: "flex flex-col md:flex-row items-center justify-between gap-4" },
           React.createElement('div', null,
             React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Ticket Dashboard"),
-            React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, `Welcome, ${currentUser.name}. Here are your tickets.`)
+            React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, `Welcome, Store ${currentUser.store}. Here are your tickets.`)
           ),
           React.createElement('div', { className: "flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto" },
             currentUser.role === Role.STORE_MANAGER && React.createElement('button', { onClick: () => setCreateModalOpen(true), className: "inline-flex items-center justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 w-full" }, React.createElement(PlusIcon, { className: "h-5 w-5 mr-2" }), "Raise New Ticket"),
