@@ -30,9 +30,6 @@
         }
       }
     </script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
       /* Custom scrollbar for webkit */
       ::-webkit-scrollbar {
@@ -56,12 +53,11 @@
   <script type="importmap">
 {
   "imports": {
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "recharts": "https://aistudiocdn.com/recharts@^3.3.0",
-    "@heroicons/react/": "https://aistudiocdn.com/@heroicons/react@^2.2.0/"
+    "react": "https://aistudiocdn.com/react@^19.2.1",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.1/client",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.1"
   }
 }
 </script>
@@ -73,35 +69,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import ReactDOM from 'react-dom/client';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 
-// --- Types ---
-const Role = {
-  STORE_MANAGER: 'Store Manager',
-  CLUSTER_MANAGER: 'Cluster Manager',
-  DEPARTMENT_SPECIALIST: 'Department Specialist',
-  OPERATIONS_HEAD: 'Operations Head',
-  ADMIN: 'Admin',
-};
-
-const Status = {
-  RAISED: 'Raised',
-  ASSIGNED: 'Assigned',
-  IN_PROGRESS: 'In Progress',
-  COMPLETED: 'Completed',
-  PENDING_CLOSURE: 'Pending Closure',
-  CLOSED: 'Closed',
-};
-
-const Category = {
-  MAINTENANCE: 'Maintenance',
-  HR: 'HR',
-  INVENTORY: 'Inventory',
-  IT: 'IT Support',
-  CCTV: 'CCTV',
-  VISUAL_MERCHANDIZING: 'Visual Merchandizing',
-  ACCOUNTS: 'Accounts',
-};
-
-// --- Icons ---
+// --- ICONS ---
 const SunIcon = (props) => (
   React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M12 21a9 9 0 110-18 9 9 0 010 18z" })
@@ -243,101 +211,53 @@ const Bars3Icon = (props) => (
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" })
   )
 );
-// Added PhotoIcon
 const PhotoIcon = (props) => (
   React.createElement('svg', { ...props, xmlns: "http://www.w3.org/2000/svg", fill: "none", viewBox: "0 0 24 24", strokeWidth: 1.5, stroke: "currentColor" },
     React.createElement('path', { strokeLinecap: "round", strokeLinejoin: "round", d: "M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" })
   )
 );
 
-const KebabMenu = ({ menuItems }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const menuRef = useRef(null);
+// --- CONFIGURATION ---
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyHHoBZ6IkJzP-u5GAZbUyxje1Gt5W7ZaTZIomF51V0tgiHi471cgbJ9jjJvAn8jj1d/exec"; 
 
-    // Close menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            // This is the corrected line
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, []);
-
-    const toggleMenu = (e) => {
-        e.stopPropagation(); 
-        setIsOpen(!isOpen);
-    };
-
-    return (
-        React.createElement('div', { ref: menuRef, className: "relative inline-block text-left" },
-            // Button with the three dots icon
-            React.createElement('button', {
-                onClick: toggleMenu,
-                className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500",
-                title: "Options"
-            }, React.createElement(EllipsisVerticalIcon, { className: "h-5 w-5" })),
-
-            // Dropdown Menu
-            isOpen && (
-                React.createElement('div', {
-                    className: "origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50",
-                    role: "menu",
-                    'aria-orientation': "vertical",
-                    'aria-labelledby': "options-menu"
-                },
-                    menuItems.map((item, index) => (
-                        React.createElement('a', {
-                            key: index,
-                            href: item.href || '#',
-                            onClick: (e) => {
-                                setIsOpen(false); // Close menu on click
-                                if (item.onClick) {
-                                    e.preventDefault(); 
-                                    item.onClick(e);
-                                }
-                            },
-                            className: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150",
-                            role: "menuitem"
-                        }, item.label)
-                    ))
-                )
-            )
-        )
-    );
+// --- Types ---
+const Role = {
+  STORE_MANAGER: 'Store Manager',
+  CLUSTER_MANAGER: 'Cluster Manager',
+  DEPARTMENT_SPECIALIST: 'Department Specialist',
+  OPERATIONS_HEAD: 'Operations Head',
+  ADMIN: 'Admin',
 };
+
+const Status = {
+  RAISED: 'Raised',
+  ASSIGNED: 'Assigned',
+  IN_PROGRESS: 'In Progress',
+  COMPLETED: 'Completed',
+  PENDING_CLOSURE: 'Pending Closure',
+  CLOSED: 'Closed',
+};
+
+const DEFAULT_CATEGORIES = [
+  'Maintenance',
+  'HR',
+  'Inventory',
+  'IT Support',
+  'CCTV',
+  'Visual Merchandizing',
+  'Accounts',
+];
 
 // --- Constants ---
 const INITIAL_USERS = [
-  { id: 'user-admin-1', name: 'Admin User', role: Role.ADMIN, email: 'admin@retailops.com', password: 'password123', passwordChanged: false },
-  { id: 'user-ops-1', name: 'Olivia Payne', role: Role.OPERATIONS_HEAD, email: 'olivia.payne@retailops.com', password: 'password' },
-  { id: 'user-cm-1', name: 'Charles Miller', role: Role.CLUSTER_MANAGER, cluster: 'North Cluster', email: 'charles.miller@retailops.com', password: 'password' },
-  { id: 'user-cm-2', name: 'Chloe Davis', role: Role.CLUSTER_MANAGER, cluster: 'South Cluster', email: 'chloe.davis@retailops.com', password: 'password' },
-  { id: 'user-ds-1', name: 'John Smith', role: Role.DEPARTMENT_SPECIALIST, email: 'john.smith.it@retailops.com', password: 'password' },
-  { id: 'user-ds-2', name: 'Jane Doe', role: Role.DEPARTMENT_SPECIALIST, email: 'jane.doe.hr@retailops.com', password: 'password' },
-  { id: 'user-ds-3', name: 'Peter Jones', role: Role.DEPARTMENT_SPECIALIST, email: 'peter.jones.maint@retailops.com', password: 'password' },
-  { id: 'user-sm-1', name: 'Sophie Morgan', role: Role.STORE_MANAGER, store: 'Downtown Central', email: 'sophie.morgan@retailops.com', password: 'password' },
+  { id: 'user-admin-seed', name: 'ADMIN', role: Role.ADMIN, email: 'admin@kasamfashions.com', password: '123456', passwordChanged: false },
 ];
 
-const INITIAL_TICKETS = [
-  { id: 'TICKET-001', title: 'Leaking AC unit in main aisle', description: 'The main air conditioning unit in aisle 5 has been leaking water...', status: Status.ASSIGNED, category: Category.MAINTENANCE, priority: 'High', raisedBy: 'user-sm-1', store: 'Downtown Central', assignedTo: 'user-ds-3', assignedClusterManager: 'user-cm-1', createdAt: '2023-10-26T09:00:00Z', updatedAt: '2023-10-26T09:00:00Z', comments: [], history: [ { status: Status.RAISED, timestamp: '2023-10-26T09:00:00Z', updatedBy: 'user-sm-1' } ] },
-];
+const INITIAL_TICKETS = [];
+const INITIAL_CATEGORY_ASSIGNMENTS = {};
+const INITIAL_APP_PERMISSIONS = {};
 
-const INITIAL_CATEGORY_ASSIGNMENTS = {
-    [Category.IT]: ['user-ds-1'],
-    [Category.HR]: ['user-ds-2'],
-    [Category.MAINTENANCE]: ['user-ds-3'],
-};
-
-const INITIAL_APP_PERMISSIONS = {
-    'sales-insights': ['user-admin-1'],
-};
-
-const SWITCHABLE_APPS = {
+const DEFAULT_APPS = {
     'sales-insights': {
         name: 'Kasam Sales Insights',
         url: 'https://kasamfashions.github.io/Kasam-Sales-Insights/',
@@ -345,38 +265,42 @@ const SWITCHABLE_APPS = {
     } 
 };
 
+// --- Google Sheets / API Service Layer ---
+const GoogleSheetsService = {
+    async getData() {
+        try {
+            const response = await fetch(`${GOOGLE_SCRIPT_URL}?action=getData`);
+            if (!response.ok) throw new Error('Network response was not ok');
+            return await response.json();
+        } catch (e) {
+            console.error("Failed to fetch from Sheets", e);
+            return {
+                users: [],
+                tickets: [],
+                categoryAssignments: {},
+                appPermissions: {}
+            };
+        }
+    },
 
-// --- Firebase ---
-const firebaseConfig = {
-  apiKey: "AIzaSyCSxPL4Fl5ajsMJG8jVcbek-aHEvMclVug",
-  authDomain: "kasam-connekt.firebaseapp.com",
-  projectId: "kasam-connekt",
-  storageBucket: "kasam-connekt.firebasestorage.app",
-  messagingSenderId: "844196020427",
-  appId: "1:844196020427:web:b6b4882a212646bf36db4e",
-  measurementId: "G-CKFC4JWT0X"
-};
-
-let db;
-if (window.firebase) {
-    if (!window.firebase.apps.length) {
-        window.firebase.initializeApp(firebaseConfig);
+    async saveData(collection, data) {
+        try {
+            await fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "text/plain;charset=utf-8",
+                },
+                body: JSON.stringify({ action: 'save', collection, data })
+            });
+        } catch (e) {
+            console.error("Save to sheets failed", e);
+            alert("Failed to save data to Google Sheets. Please check your internet connection.");
+        }
     }
-    db = window.firebase.firestore();
-}
+};
 
 // --- App Context ---
 const AppContext = createContext(null);
-
-const getInitialState = (key, defaultValue) => {
-    try {
-        const savedItem = localStorage.getItem(key);
-        if (savedItem) return JSON.parse(savedItem);
-    } catch (error) {
-        console.error(`Error reading from localStorage key “${key}”:`, error);
-    }
-    return defaultValue;
-};
 
 const AppProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
@@ -384,88 +308,86 @@ const AppProvider = ({ children }) => {
   const [categoryAssignments, setCategoryAssignments] = useState({});
   const [appPermissions, setAppPermissions] = useState({});
   
-  const [currentUser, setCurrentUser] = useState(() => getInitialState('kasam_currentUser', null));
-  const [theme, setTheme] = useState(() => getInitialState('kasam_theme', 'light'));
+  const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
+  const [allApps, setAllApps] = useState(DEFAULT_APPS);
+
+  const [currentUser, setCurrentUser] = useState(null);
+  const [theme, setTheme] = useState('light'); 
   
   const [activeView, setActiveView] = useState('dashboard');
   const [currentApplication, setCurrentApplication] = useState('e-ticket');
-  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
   const [isChangePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
   const [isFirstAdminLogin, setFirstAdminLogin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if(!db) return;
-    const seedDatabase = async () => {
-        const configRef = db.collection('meta').doc('config');
-        const configDoc = await configRef.get();
-
-        if (configDoc.exists && configDoc.data().seeded) {
-            return;
+    const loadData = async () => {
+        setIsLoading(true);
+        const data = await GoogleSheetsService.getData();
+        
+        let newUsers = data.users || [];
+        let newTickets = data.tickets || [];
+        let newAssignments = data.categoryAssignments || {};
+        let newPermissions = data.appPermissions || {};
+        
+        if (newUsers.length === 0) {
+             console.log("No data found in Google Sheets. Seeding initial data...");
+             newUsers = INITIAL_USERS;
+             newTickets = INITIAL_TICKETS;
+             newAssignments = INITIAL_CATEGORY_ASSIGNMENTS;
+             newPermissions = INITIAL_APP_PERMISSIONS;
+             
+             await Promise.all([
+                GoogleSheetsService.saveData('users', newUsers),
+                GoogleSheetsService.saveData('tickets', newTickets),
+                GoogleSheetsService.saveData('assignments', newAssignments),
+                GoogleSheetsService.saveData('permissions', newPermissions)
+             ]);
+             console.log("Initial seed data sent to Google Sheets.");
         }
+
+        setUsers(newUsers);
+        setTickets(newTickets);
+        setCategoryAssignments(newAssignments);
+        setAppPermissions(newPermissions);
         
-        console.log("Database is empty. Seeding initial data...");
-        const batch = db.batch();
+        const assignedCategories = Object.keys(newAssignments || {});
+        const mergedCategories = Array.from(new Set([...DEFAULT_CATEGORIES, ...assignedCategories]));
+        setCategories(mergedCategories);
 
-        INITIAL_USERS.forEach((user) => {
-            const userRef = db.collection('users').doc(user.id);
-            batch.set(userRef, user);
+        const customAppsData = newPermissions?.['_CUSTOM_APPS_'] || [];
+        const mergedApps = { ...DEFAULT_APPS };
+        customAppsData.forEach(app => {
+            mergedApps[app.id] = { ...app, icon: GlobeAltIcon };
         });
-
-        INITIAL_TICKETS.forEach((ticket) => {
-            const ticketRef = db.collection('tickets').doc(ticket.id);
-            batch.set(ticketRef, ticket);
-        });
+        setAllApps(mergedApps);
         
-        const assignmentsRef = db.collection('meta').doc('categoryAssignments');
-        batch.set(assignmentsRef, INITIAL_CATEGORY_ASSIGNMENTS);
-        
-        const permissionsRef = db.collection('meta').doc('appPermissions');
-        batch.set(permissionsRef, INITIAL_APP_PERMISSIONS);
-
-        batch.set(configRef, { seeded: true, version: 1 });
-        
-        await batch.commit();
-        console.log("Initial data seeded successfully.");
-    };
-
-    const setupListeners = () => {
-        const unsubUsers = db.collection('users').onSnapshot((snapshot) => {
-            const usersData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setUsers(usersData);
-        });
-        const unsubTickets = db.collection('tickets').onSnapshot((snapshot) => {
-            const ticketsData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-            setTickets(ticketsData);
-        });
-        const unsubAssignments = db.collection('meta').doc('categoryAssignments').onSnapshot((doc) => {
-            setCategoryAssignments(doc.data() || {});
-        });
-        const unsubPermissions = db.collection('meta').doc('appPermissions').onSnapshot((doc) => {
-            setAppPermissions(doc.data() || {});
-        });
-
-        return () => {
-            unsubUsers();
-            unsubTickets();
-            unsubAssignments();
-            unsubPermissions();
-        };
-    };
-
-    seedDatabase().then(() => {
-        const unsubscribe = setupListeners();
         setIsLoading(false);
-        return unsubscribe;
-    }).catch(console.error);
-    
+    };
+    loadData();
   }, []);
 
+  const saveTickets = (newTickets) => {
+      setTickets(newTickets);
+      GoogleSheetsService.saveData('tickets', newTickets);
+  };
+  
+  const saveUsers = (newUsers) => {
+      setUsers(newUsers);
+      GoogleSheetsService.saveData('users', newUsers);
+  };
+
+  const saveAssignments = (newAssignments) => {
+      setCategoryAssignments(newAssignments);
+      GoogleSheetsService.saveData('assignments', newAssignments);
+  };
+
+  const savePermissions = (newPermissions) => {
+      setAppPermissions(newPermissions);
+      GoogleSheetsService.saveData('permissions', newPermissions);
+  };
+
   useEffect(() => {
-    localStorage.setItem('kasam_currentUser', JSON.stringify(currentUser));
-  }, [currentUser]);
-  useEffect(() => {
-    localStorage.setItem('kasam_theme', JSON.stringify(theme));
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }, [theme]);
 
@@ -487,7 +409,8 @@ const AppProvider = ({ children }) => {
   const toggleTheme = useCallback(() => setTheme(prev => (prev === 'light' ? 'dark' : 'light')), []);
   
   const handleLogin = async (username, password) => {
-    const userInDb = users.find(u => u.name === username && u.password === password);
+    const userInDb = users.find(u => String(u.name).trim() === username.trim() && String(u.password).trim() === password.trim());
+    
     if (userInDb) {
       if (userInDb.role === Role.ADMIN && !userInDb.passwordChanged) {
           setFirstAdminLogin(true);
@@ -505,7 +428,8 @@ const AppProvider = ({ children }) => {
   };
   
   const changePassword = async (userId, newPassword) => {
-      await db.collection('users').doc(userId).update({ password: newPassword, passwordChanged: true });
+      const updatedUsers = users.map(u => u.id === userId ? { ...u, password: newPassword, passwordChanged: true } : u);
+      saveUsers(updatedUsers);
       if (userId === currentUser?.id) {
           setCurrentUser(prev => prev ? ({ ...prev, password: newPassword, passwordChanged: true }) : null);
       }
@@ -530,36 +454,49 @@ const AppProvider = ({ children }) => {
   }, [currentUser, populatedTickets, categoryAssignments]);
 
   const createTicket = (newTicketData) => {
+    // Resolve names for Google Sheets readability
+    const raisedByUser = users.find(u => u.id === newTicketData.raisedBy);
+    const clusterManager = users.find(u => u.id === newTicketData.assignedClusterManager);
+
     const newTicket = { 
         ...newTicketData, 
+        raisedByName: raisedByUser ? raisedByUser.name : 'Unknown',
+        assignedClusterManagerName: clusterManager ? clusterManager.name : 'Unknown',
         status: Status.RAISED, 
         assignedTo: null,
+        assignedToName: '',
         closureRequestedBy: null, 
-        history: [{ status: Status.RAISED, timestamp: new Date().toISOString(), updatedBy: currentUser?.id }], 
+        closureRequestedByName: '',
+        history: [{ status: Status.RAISED, timestamp: new Date().toISOString(), updatedBy: currentUser?.id, updatedByName: currentUser?.name }], 
         comments: [] 
     };
-    db.collection('tickets').doc(newTicket.id).set(newTicket);
+    saveTickets([...tickets, newTicket]);
   };
 
   const updateTicketStatus = (ticketId, newStatus) => {
-    const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser?.id };
-    db.collection('tickets').doc(ticketId).update({ 
+    const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser?.id, updatedByName: currentUser?.name };
+    const updatedTickets = tickets.map(t => t.id === ticketId ? { 
+        ...t, 
         status: newStatus, 
-        history: window.firebase.firestore.FieldValue.arrayUnion(historyEvent), 
+        history: [...(t.history || []), historyEvent],
         updatedAt: new Date().toISOString() 
-    });
+    } : t);
+    saveTickets(updatedTickets);
   };
 
   const addComment = (ticketId, commentText) => {
-    const newComment = { id: `C-${Date.now()}`, user: currentUser?.id, text: commentText, timestamp: new Date().toISOString() };
-    db.collection('tickets').doc(ticketId).update({
-        comments: window.firebase.firestore.FieldValue.arrayUnion(newComment)
-    });
+    const newComment = { id: `C-${Date.now()}`, user: currentUser?.id, userName: currentUser?.name, text: commentText, timestamp: new Date().toISOString() };
+    const updatedTickets = tickets.map(t => t.id === ticketId ? { 
+        ...t, 
+        comments: [...(t.comments || []), newComment]
+    } : t);
+    saveTickets(updatedTickets);
   };
 
   const resetUserPassword = async (userId) => {
     try {
-        await db.collection('users').doc(userId).update({ password: 'password', passwordChanged: false });
+        const updatedUsers = users.map(u => u.id === userId ? { ...u, password: 'password', passwordChanged: false } : u);
+        saveUsers(updatedUsers);
         alert('Password has been successfully reset to "password". The user will be required to change it on their next login if they are an Admin.');
     } catch (error) {
         console.error("Error resetting password:", error);
@@ -572,7 +509,8 @@ const AppProvider = ({ children }) => {
       alert("You cannot delete yourself.");
       return;
     }
-    db.collection('users').doc(userId).delete();
+    const updatedUsers = users.filter(u => u.id !== userId);
+    saveUsers(updatedUsers);
   };
 
   const deleteTicketsByStatus = async (statusesToDelete) => {
@@ -593,21 +531,8 @@ const AppProvider = ({ children }) => {
     
     setIsLoading(true);
     try {
-        const ticketsRef = db.collection('tickets');
-        const query = ticketsRef.where('status', 'in', statusesToDelete);
-
-        let snapshot;
-        do {
-            snapshot = await query.limit(500).get();
-            if (snapshot.empty) break;
-
-            const batch = db.batch();
-            snapshot.docs.forEach(doc => {
-                batch.delete(doc.ref);
-            });
-            await batch.commit();
-        } while (!snapshot.empty);
-
+        const updatedTickets = tickets.filter(t => !statusesToDelete.includes(t.status));
+        saveTickets(updatedTickets);
         alert("Selected tickets have been deleted successfully.");
     } catch (error) {
         console.error("Error deleting tickets by status:", error);
@@ -618,121 +543,151 @@ const AppProvider = ({ children }) => {
   };
   
   const deleteTicket = (ticketId) => {
-      db.collection('tickets').doc(ticketId).delete();
+      const updatedTickets = tickets.filter(t => t.id !== ticketId);
+      saveTickets(updatedTickets);
   };
 
   const assignTicketToSelf = (ticketId) => {
-    const historyEvent = { status: Status.ASSIGNED, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
-    db.collection('tickets').doc(ticketId).update({
+    const historyEvent = { status: Status.ASSIGNED, timestamp: new Date().toISOString(), updatedBy: currentUser.id, updatedByName: currentUser.name };
+    const updatedTickets = tickets.map(t => t.id === ticketId ? {
+        ...t,
         assignedTo: currentUser.id,
+        assignedToName: currentUser.name,
         status: Status.ASSIGNED,
-        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        history: [...(t.history || []), historyEvent],
         updatedAt: new Date().toISOString()
-    });
+    } : t);
+    saveTickets(updatedTickets);
   };
 
   const assignTicketToSpecialist = async (ticketId, specialistId) => {
-     const ticketRef = db.collection('tickets').doc(ticketId);
-     const doc = await ticketRef.get();
-     const ticket = doc.data();
-
+     const ticket = tickets.find(t => t.id === ticketId);
      if (ticket) {
          let newStatus = ticket.status;
          if (specialistId && ticket.status === Status.RAISED) newStatus = Status.ASSIGNED;
          else if (!specialistId) newStatus = Status.RAISED;
-         const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
-         ticketRef.update({
+         
+         // Resolve specialist name
+         const specialist = users.find(u => u.id === specialistId);
+         const specialistName = specialist ? specialist.name : '';
+
+         const historyEvent = { status: newStatus, timestamp: new Date().toISOString(), updatedBy: currentUser.id, updatedByName: currentUser.name };
+         const updatedTickets = tickets.map(t => t.id === ticketId ? {
+             ...t,
              assignedTo: specialistId || null,
+             assignedToName: specialistName,
              status: newStatus,
-             history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+             history: [...(t.history || []), historyEvent],
              updatedAt: new Date().toISOString()
-         });
+         } : t);
+         saveTickets(updatedTickets);
      }
   };
 
   const requestTicketClosure = (ticketId) => {
-    const historyEvent = { status: Status.PENDING_CLOSURE, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
-    db.collection('tickets').doc(ticketId).update({
+    const historyEvent = { status: Status.PENDING_CLOSURE, timestamp: new Date().toISOString(), updatedBy: currentUser.id, updatedByName: currentUser.name };
+    const updatedTickets = tickets.map(t => t.id === ticketId ? {
+        ...t,
         status: Status.PENDING_CLOSURE,
         closureRequestedBy: currentUser.id,
-        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        closureRequestedByName: currentUser.name,
+        history: [...(t.history || []), historyEvent],
         updatedAt: new Date().toISOString()
-    });
+    } : t);
+    saveTickets(updatedTickets);
   };
   
   const approveTicketClosure = (ticketId) => {
-    const historyEvent = { status: Status.CLOSED, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
-    db.collection('tickets').doc(ticketId).update({
+    const historyEvent = { status: Status.CLOSED, timestamp: new Date().toISOString(), updatedBy: currentUser.id, updatedByName: currentUser.name };
+    const updatedTickets = tickets.map(t => t.id === ticketId ? {
+        ...t,
         status: Status.CLOSED,
-        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        history: [...(t.history || []), historyEvent],
         updatedAt: new Date().toISOString()
-    });
+    } : t);
+    saveTickets(updatedTickets);
   };
 
   const rejectTicketClosure = (ticketId, reason) => {
-    const newComment = { id: `C-${Date.now()}`, user: currentUser.id, text: `Closure Rejected: ${reason}`, timestamp: new Date().toISOString() };
-    const historyEvent = { status: Status.IN_PROGRESS, timestamp: new Date().toISOString(), updatedBy: currentUser.id };
-    db.collection('tickets').doc(ticketId).update({
+    const newComment = { id: `C-${Date.now()}`, user: currentUser.id, userName: currentUser.name, text: `Closure Rejected: ${reason}`, timestamp: new Date().toISOString() };
+    const historyEvent = { status: Status.IN_PROGRESS, timestamp: new Date().toISOString(), updatedBy: currentUser.id, updatedByName: currentUser.name };
+    const updatedTickets = tickets.map(t => t.id === ticketId ? {
+        ...t,
         status: Status.IN_PROGRESS,
-        comments: firebase.firestore.FieldValue.arrayUnion(newComment),
-        history: firebase.firestore.FieldValue.arrayUnion(historyEvent),
+        comments: [...(t.comments || []), newComment],
+        history: [...(t.history || []), historyEvent],
         updatedAt: new Date().toISOString(),
-        closureRequestedBy: null
-    });
+        closureRequestedBy: null,
+        closureRequestedByName: ''
+    } : t);
+    saveTickets(updatedTickets);
   };
 
   const createUser = (userData, password) => {
     const id = `user-${Date.now()}`;
     const newUser = { ...userData, id, password, ...(userData.role === Role.ADMIN && {passwordChanged: false}) };
-    db.collection('users').doc(id).set(newUser);
+    saveUsers([...users, newUser]);
   };
   
   const updateUser = (userId, updates) => {
-    db.collection('users').doc(userId).update(updates);
+    const updatedUsers = users.map(u => u.id === userId ? { ...u, ...updates } : u);
+    saveUsers(updatedUsers);
   };
 
   const updateCategoryAssignment = (category, userId, isAssigned) => {
-      const docRef = db.collection('meta').doc('categoryAssignments');
-      db.runTransaction(async (transaction) => {
-          const doc = await transaction.get(docRef);
-          const data = doc.data() || {};
-          const current = data[category] || [];
-          const newAssignments = isAssigned
-              ? [...new Set([...current, userId])]
-              : current.filter(id => id !== userId);
-          transaction.update(docRef, { [category]: newAssignments });
-      });
+      const current = categoryAssignments[category] || [];
+      const newAssignmentsList = isAssigned
+          ? [...new Set([...current, userId])]
+          : current.filter(id => id !== userId);
+      
+      const newAssignments = { ...categoryAssignments, [category]: newAssignmentsList };
+      saveAssignments(newAssignments);
   };
 
   const updateAppPermission = (appId, userId, hasAccess) => {
-      const docRef = db.collection('meta').doc('appPermissions');
-      const fieldValue = firebase.firestore.FieldValue;
-
-      if (hasAccess) {
-          docRef.set({
-              [appId]: fieldValue.arrayUnion(userId)
-          }, { merge: true }).catch(error => {
-              console.error("Error adding app permission:", error);
-              alert("Could not grant permission. Please try again.");
-          });
-      } else {
-          docRef.update({
-              [appId]: fieldValue.arrayRemove(userId)
-          }).catch(error => {
-              console.error("Error removing app permission:", error);
-              alert("Could not revoke permission. Please try again.");
-          });
-      }
+      const current = appPermissions[appId] || [];
+      const newUserList = hasAccess
+          ? [...new Set([...current, userId])]
+          : current.filter(id => id !== userId);
+      
+      const newPermissions = { ...appPermissions, [appId]: newUserList };
+      savePermissions(newPermissions);
   };
 
+  const addNewCategory = (name) => {
+      if(categories.includes(name)) return;
+      const newAssignments = { ...categoryAssignments, [name]: [] };
+      setCategories(prev => [...prev, name]);
+      saveAssignments(newAssignments);
+  };
+
+  const addNewApp = (name, url) => {
+      const id = `app-${Date.now()}`;
+      const newApp = { id, name, url };
+      const currentCustomApps = appPermissions['_CUSTOM_APPS_'] || [];
+      const updatedCustomApps = [...currentCustomApps, newApp];
+      
+      const newPermissions = {
+          ...appPermissions,
+          ['_CUSTOM_APPS_']: updatedCustomApps,
+          [id]: [] 
+      };
+      
+      setAllApps(prev => ({ ...prev, [id]: { ...newApp, icon: GlobeAltIcon } }));
+      savePermissions(newPermissions);
+  };
+
+  const openChangePasswordModal = () => setChangePasswordModalOpen(true);
 
   const contextValue = {
     currentUser, theme, toggleTheme, tickets: getVisibleTickets, allTickets: populatedTickets, createTicket, updateTicketStatus, addComment, 
     users, handleLogin, logout, changePassword, activeView, setActiveView, currentApplication, setCurrentApplication, 
     isChangePasswordModalOpen, setChangePasswordModalOpen, isFirstAdminLogin, setFirstAdminLogin,
-    categoryAssignments, appPermissions, isLoading, db,
+    categoryAssignments, appPermissions, isLoading, categories, allApps,
     resetUserPassword, deleteUser, deleteTicketsByStatus, deleteTicket, assignTicketToSelf, assignTicketToSpecialist,
-    requestTicketClosure, approveTicketClosure, rejectTicketClosure, createUser, updateUser, updateCategoryAssignment, updateAppPermission
+    requestTicketClosure, approveTicketClosure, rejectTicketClosure, createUser, updateUser, updateCategoryAssignment, updateAppPermission,
+    addNewCategory, addNewApp,
+    openChangePasswordModal
   };
   
   return (
@@ -757,6 +712,63 @@ const FloatingElement = ({ children, speed, delay, initialX, initialY, scale, cl
     );
 };
 
+const KebabMenu = ({ menuItems }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+    const toggleMenu = (e) => {
+        e.stopPropagation(); 
+        setIsOpen(!isOpen);
+    };
+
+    return (
+        React.createElement('div', { ref: menuRef, className: "relative inline-block text-left" },
+            React.createElement('button', {
+                onClick: toggleMenu,
+                className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500",
+                title: "Options"
+            }, React.createElement(EllipsisVerticalIcon, { className: "h-5 w-5" })),
+
+            isOpen && (
+                React.createElement('div', {
+                    className: "origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-800 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-700 z-50",
+                    role: "menu",
+                    'aria-orientation': "vertical",
+                    'aria-labelledby': "options-menu"
+                },
+                    menuItems.map((item, index) => (
+                        React.createElement('a', {
+                            key: index,
+                            href: item.href || '#',
+                            onClick: (e) => {
+                                setIsOpen(false); 
+                                if (item.onClick) {
+                                    e.preventDefault(); 
+                                    item.onClick(e);
+                                }
+                            },
+                            className: "block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150",
+                            role: "menuitem"
+                        }, item.label)
+                    ))
+                )
+            )
+        )
+    );
+};
+
 const Login = ({ onLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -771,7 +783,7 @@ const Login = ({ onLogin }) => {
         const handleMouseMove = (ev) => {
             if (containerRef.current) {
                 const { clientWidth, clientHeight } = containerRef.current;
-                const x = (ev.clientX - clientWidth / 2) / 35; // Lower sensitivity for a cleaner feel
+                const x = (ev.clientX - clientWidth / 2) / 35;
                 const y = (ev.clientY - clientHeight / 2) / 35;
                 setMousePosition({ x, y });
             }
@@ -816,10 +828,8 @@ const Login = ({ onLogin }) => {
         React.createElement('div', { className: "absolute top-4 right-4 z-50" }, 
         React.createElement(KebabMenu, { 
             menuItems: [
-                // 🚀 NEW ITEM: Scrap Sale Tracker link using 'href'
                 { label: 'KF Scrap Sale Tracker', href: 'https://scrapsale.pages.dev/' }, 
                 { label: 'KF Audit Tool', href: 'https://kasamfashions.github.io/Store_Auditlist/' },
-                
             ]
         })
     ),
@@ -833,7 +843,6 @@ const Login = ({ onLogin }) => {
 
             React.createElement('div', { ref: cardRef, style: cardStyle, className: "relative z-10 w-full max-w-md p-8 bg-white/70 backdrop-blur-xl border border-white/50 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] ring-1 ring-gray-200" }, 
 
-    // 2. PASTE THE NEW BLOCK HERE (as the first child of the card container):
                 React.createElement('div', { className: "flex flex-col items-center justify-center mb-6" },
                     React.createElement('div', { className: "animate-float-medium mb-4" },
                         React.createElement('img', {
@@ -1000,6 +1009,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
   const handleSaveAssignment = () => {
     if (isAssignmentChanged) {
       assignTicketToSpecialist(ticket.id, selectedSpecialistId);
+      onClose();
     }
   };
   const handleDeleteTicket = () => {
@@ -1135,9 +1145,9 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
           canDelete && React.createElement('button', { onClick: handleDeleteTicket, className: "rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700" }, "Delete Ticket"),
           canAssignToSelf && React.createElement('button', { onClick: () => assignTicketToSelf(ticket.id), className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Assign to Me"),
           isAssignmentChanged && canManageAssignment && React.createElement('button', { onClick: handleSaveAssignment, className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700" }, "Save Assignment"),
-          canStartProgress && React.createElement('button', { onClick: () => updateTicketStatus(ticket.id, Status.IN_PROGRESS), className: "rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700" }, "Start Progress"),
-          canMarkAsComplete && React.createElement('button', { onClick: () => updateTicketStatus(ticket.id, Status.COMPLETED), className: "rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700" }, "Mark as Complete"),
-          canRequestClosure && React.createElement('button', { onClick: () => requestTicketClosure(ticket.id), className: "rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-yellow-600" }, "Request Closure"),
+          canStartProgress && React.createElement('button', { onClick: () => updateTicketStatus(ticket.id, Status.IN_PROGRESS,onClose()), className: "rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700" }, "Start Progress"),
+          canMarkAsComplete && React.createElement('button', { onClick: () => updateTicketStatus(ticket.id, Status.COMPLETED,onClose()), className: "rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700" }, "Mark as Complete"),
+          canRequestClosure && React.createElement('button', { onClick: () => requestTicketClosure(ticket.id,onClose()), className: "rounded-md bg-yellow-500 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-yellow-600" }, "Request Closure"),
           canApproveRejectClosure && (showRejectionInput ? (
             React.createElement('div', { className: "w-full flex items-center gap-2" },
               React.createElement('input', { type: "text", value: rejectionReason, onChange: e => setRejectionReason(e.target.value), placeholder: "Reason for rejection...", className: "block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm sm:text-sm text-gray-900 dark:text-white" }),
@@ -1147,7 +1157,7 @@ const TicketDetailsModal = ({ isOpen, onClose, ticket }) => {
           ) : (
             React.createElement(React.Fragment, null,
               React.createElement('button', { onClick: () => setShowRejectionInput(true), className: "flex items-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-red-700" }, React.createElement(XCircleIcon, { className: "h-5 w-5 mr-2" }), "Reject Closure"),
-              React.createElement('button', { onClick: () => approveTicketClosure(ticket.id), className: "flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700" }, React.createElement(CheckCircleIcon, { className: "h-5 w-5 mr-2" }), "Approve Closure")
+              React.createElement('button', { onClick: () => approveTicketClosure(ticket.id,onClose()), className: "flex items-center rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700" }, React.createElement(CheckCircleIcon, { className: "h-5 w-5 mr-2" }), "Approve Closure")
             )
           )),
           React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Close")
@@ -1174,7 +1184,8 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
   const context = useContext(AppContext);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState(Category.MAINTENANCE);
+  const { categories } = context || { categories: [] };
+  const [category, setCategory] = useState(categories[0] || 'Maintenance');
   const [priority, setPriority] = useState('Medium');
   const [clusterManagerId, setClusterManagerId] = useState('');
   const [photo, setPhoto] = useState(null);
@@ -1187,14 +1198,14 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
   const resetState = useCallback(() => {
     setTitle('');
     setDescription('');
-    setCategory(Category.MAINTENANCE);
+    setCategory(categories[0] || 'Maintenance');
     setPriority('Medium');
     setClusterManagerId(clusterManagers.length > 0 ? clusterManagers[0].id : '');
     setPhoto(null);
     setPhotoError('');
     setEmpId('');
     setEmpName('');
-  }, [clusterManagers]);
+  }, [clusterManagers, categories]);
 
   useEffect(() => {
     if (isOpen && clusterManagers.length > 0 && !clusterManagerId) {
@@ -1209,11 +1220,10 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    // 30KB limit (30 * 1024 bytes)
     if (file.size > 30720) {
         setPhotoError("Image size exceeds 30KB limit.");
         setPhoto(null);
-        e.target.value = null; // Reset input
+        e.target.value = null; 
         return;
     }
 
@@ -1281,7 +1291,7 @@ const CreateTicketModal = ({ isOpen, onClose }) => {
               React.createElement('div', null,
                 React.createElement('label', { htmlFor: "category", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Category"),
                 React.createElement('select', { id: "category", value: category, onChange: e => setCategory(e.target.value), className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white" },
-                  Object.values(Category).map(cat => React.createElement('option', { key: cat, value: cat }, cat))
+                  categories.map(cat => React.createElement('option', { key: cat, value: cat }, cat))
                 )
               ),
               React.createElement('div', null,
@@ -1455,7 +1465,7 @@ const Dashboard = () => {
       alert("No pending tickets to export based on current filters.");
       return;
     }
-    const headers = ['ID', 'Title', 'Status', 'Priority', 'Category', 'Store', 'Raised By', 'Assigned To', 'Cluster Manager', 'Created At', 'Updated At', 'EMP ID', 'Emp Name', 'Description', 'Photo URL'];
+    const headers = ['ID', 'Title', 'Status', 'Priority', 'Category', 'Store', 'Raised By', 'Assigned To', 'Cluster Manager', 'Created At', 'Updated At', 'EMP ID', 'Emp Name', 'Description',];
     const csvRows = [headers.join(',')];
     for (const ticket of ticketsToExport) {
       const row = [
@@ -1473,7 +1483,6 @@ const Dashboard = () => {
         ticket.empId || '',
         `"${(ticket.empName || '').replace(/"/g, '""')}"`,
         `"${(ticket.description || '').replace(/"/g, '""')}"`,
-        `"${(ticket.photo || '').replace(/"/g, '""')}"` // Fixed CSV generation for Photo URL
       ].join(',');
       csvRows.push(row);
     }
@@ -1500,7 +1509,7 @@ const Dashboard = () => {
         React.createElement('div', { className: "flex flex-col md:flex-row items-center justify-between gap-4" },
           React.createElement('div', null,
             React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Ticket Dashboard"),
-            React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, `Welcome, Store ${currentUser.store}. Here are your tickets.`)
+            React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, `Welcome, Store ${currentUser.store || currentUser.name}. Here are your tickets.`)
           ),
           React.createElement('div', { className: "flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto" },
             currentUser.role === Role.STORE_MANAGER && React.createElement('button', { onClick: () => setCreateModalOpen(true), className: "inline-flex items-center justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 w-full" }, React.createElement(PlusIcon, { className: "h-5 w-5 mr-2" }), "Raise New Ticket"),
@@ -1659,18 +1668,105 @@ const UserModal = ({ isOpen, onClose, userToEdit }) => {
   );
 };
 
+const AddCategoryModal = ({ isOpen, onClose, onAdd }) => {
+    const [name, setName] = useState('');
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (name.trim()) {
+            onAdd(name.trim());
+            onClose();
+            setName('');
+        }
+    };
+
+    return (
+        React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
+            React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md", onClick: e => e.stopPropagation() },
+                React.createElement('header', { className: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" },
+                    React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, "Add New Category"),
+                    React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600" }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
+                ),
+                React.createElement('form', { onSubmit: handleSubmit },
+                    React.createElement('main', { className: "p-6" },
+                        React.createElement('label', { htmlFor: "categoryName", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Category Name"),
+                        React.createElement('input', { type: "text", id: "categoryName", value: name, onChange: e => setName(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white", placeholder: "e.g., Electrical, Plumbing" })
+                    ),
+                    React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+                        React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Cancel"),
+                        React.createElement('button', { type: "submit", className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" }, "Add Category")
+                    )
+                )
+            )
+        )
+    );
+};
+
+const AddAppModal = ({ isOpen, onClose, onAdd }) => {
+    const [name, setName] = useState('');
+    const [url, setUrl] = useState('');
+
+    if (!isOpen) return null;
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        if (name.trim() && url.trim()) {
+            onAdd(name.trim(), url.trim());
+            onClose();
+            setName('');
+            setUrl('');
+        }
+    };
+
+    return (
+        React.createElement('div', { className: "fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4", onClick: onClose },
+            React.createElement('div', { className: "bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md", onClick: e => e.stopPropagation() },
+                React.createElement('header', { className: "flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700" },
+                    React.createElement('h2', { className: "text-xl font-bold text-gray-900 dark:text-white" }, "Add External Site"),
+                    React.createElement('button', { onClick: onClose, className: "p-1 rounded-full text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600" }, React.createElement(XMarkIcon, { className: "h-6 w-6" }))
+                ),
+                React.createElement('form', { onSubmit: handleSubmit },
+                    React.createElement('main', { className: "p-6 space-y-4" },
+                        React.createElement('div', null,
+                            React.createElement('label', { htmlFor: "appName", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Site Name"),
+                            React.createElement('input', { type: "text", id: "appName", value: name, onChange: e => setName(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white", placeholder: "e.g., HR Portal" })
+                        ),
+                        React.createElement('div', null,
+                            React.createElement('label', { htmlFor: "appUrl", className: "block text-sm font-medium text-gray-700 dark:text-gray-300" }, "Site Link (URL)"),
+                            React.createElement('input', { type: "url", id: "appUrl", value: url, onChange: e => setUrl(e.target.value), required: true, className: "mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm text-gray-900 dark:text-white", placeholder: "https://..." })
+                        )
+                    ),
+                    React.createElement('footer', { className: "flex justify-end p-4 bg-gray-50 dark:bg-gray-700/50 border-t border-gray-200 dark:border-gray-700 gap-3" },
+                        React.createElement('button', { type: "button", onClick: onClose, className: "rounded-md bg-white dark:bg-gray-600 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-500 hover:bg-gray-50 dark:hover:bg-gray-500" }, "Cancel"),
+                        React.createElement('button', { type: "submit", className: "rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2" }, "Add Site")
+                    )
+                )
+            )
+        )
+    );
+};
+
 const UserManagement = () => {
   const context = useContext(AppContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   
+  const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+  const [isAddAppOpen, setIsAddAppOpen] = useState(false);
+
   if (!context) return null;
   
   const departmentSpecialists = useMemo(() => {
     return (context?.users || []).filter(user => user.role === Role.DEPARTMENT_SPECIALIST);
   }, [context?.users]);
   
-  const { users, deleteUser, categoryAssignments, updateCategoryAssignment, appPermissions, updateAppPermission, resetUserPassword } = context;
+  const { 
+      users, deleteUser, categoryAssignments, updateCategoryAssignment, 
+      appPermissions, updateAppPermission, resetUserPassword,
+      categories, allApps, addNewCategory, addNewApp
+  } = context;
   
   const handleOpenModal = (user = null) => {
     setEditingUser(user);
@@ -1742,13 +1838,18 @@ const UserManagement = () => {
           )
         ),
         React.createElement('div', null,
-          React.createElement('div', { className: "mb-6" },
-            React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Category Assignments"),
-            React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, "Assign multiple specialists to each category for team-based ticket routing.")
+          React.createElement('div', { className: "mb-6 flex items-center justify-between" },
+            React.createElement('div', null,
+              React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Category Assignments"),
+              React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, "Assign multiple specialists to each category for team-based ticket routing.")
+            ),
+            React.createElement('button', { onClick: () => setIsAddCategoryOpen(true), className: "inline-flex items-center justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600" },
+                React.createElement(PlusIcon, { className: "h-5 w-5 mr-2" }), "Add Category"
+            )
           ),
           React.createElement('div', { className: "bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6" },
             React.createElement('div', { className: "space-y-6" },
-              Object.values(Category).map(category => React.createElement('div', { key: category, className: "border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0" },
+              categories.map(category => React.createElement('div', { key: category, className: "border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0" },
                 React.createElement('div', { className: "flex items-center mb-4" },
                   React.createElement(TagIcon, { className: "h-5 w-5 text-gray-400 mr-3" }),
                   React.createElement('h3', { className: "text-lg font-medium text-gray-800 dark:text-gray-200" }, category)
@@ -1770,16 +1871,22 @@ const UserManagement = () => {
           )
         ),
         React.createElement('div', null,
-          React.createElement('div', { className: "mb-6" },
-            React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Application Access Control"),
-            React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, "Control which individual users can access other integrated applications.")
+          React.createElement('div', { className: "mb-6 flex items-center justify-between" },
+            React.createElement('div', null,
+              React.createElement('h1', { className: "text-3xl font-bold tracking-tight text-gray-900 dark:text-white" }, "Application Access Control"),
+              React.createElement('p', { className: "text-gray-500 dark:text-gray-400 mt-1" }, "Control which individual users can access other integrated applications.")
+            ),
+            React.createElement('button', { onClick: () => setIsAddAppOpen(true), className: "inline-flex items-center justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600" },
+                React.createElement(PlusIcon, { className: "h-5 w-5 mr-2" }), "Add Site"
+            )
           ),
           React.createElement('div', { className: "bg-white dark:bg-gray-800 shadow-sm rounded-lg p-6" },
               React.createElement('div', { className: "space-y-6" },
-                  Object.entries(SWITCHABLE_APPS).map(([appId, appDetails]) => React.createElement('div', { key: appId, className: "border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0" },
+                  Object.entries(allApps).map(([appId, appDetails]) => React.createElement('div', { key: appId, className: "border-b border-gray-200 dark:border-gray-700 pb-6 last:border-b-0 last:pb-0" },
                       React.createElement('div', { className: "flex items-center mb-4" },
                           React.createElement(appDetails.icon, { className: "h-5 w-5 text-gray-400 mr-3" }),
-                          React.createElement('h3', { className: "text-lg font-medium text-gray-800 dark:text-gray-200" }, appDetails.name)
+                          React.createElement('h3', { className: "text-lg font-medium text-gray-800 dark:text-gray-200" }, appDetails.name),
+                          React.createElement('span', { className: "ml-2 text-xs text-gray-400" }, `(${appDetails.url})`)
                       ),
                       React.createElement('div', { className: "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4" },
                           users.map(user => React.createElement('label', { key: user.id, className: "flex items-center space-x-3" },
@@ -1797,7 +1904,9 @@ const UserManagement = () => {
           )
         )
       ),
-      isModalOpen && React.createElement(UserModal, { isOpen: isModalOpen, onClose: handleCloseModal, userToEdit: editingUser })
+      isModalOpen && React.createElement(UserModal, { isOpen: isModalOpen, onClose: handleCloseModal, userToEdit: editingUser }),
+      React.createElement(AddCategoryModal, { isOpen: isAddCategoryOpen, onClose: () => setIsAddCategoryOpen(false), onAdd: addNewCategory }),
+      React.createElement(AddAppModal, { isOpen: isAddAppOpen, onClose: () => setIsAddAppOpen(false), onAdd: addNewApp })
     )
   );
 };
@@ -1923,6 +2032,7 @@ const ChangePasswordModal = ({ isOpen, onPasswordChange }) => {
         }
         setError('');
         setIsChanging(true);
+        // Call parent function to process change
         onPasswordChange(newPassword);
     };
     
@@ -2040,12 +2150,12 @@ const Header = () => {
   }, [switchAppRef, supportRef, userMenuRef]);
 
   if (!context) return null;
-  const { currentUser, theme, toggleTheme, setActiveView, activeView, logout, setCurrentApplication, appPermissions, openChangePasswordModal } = context;
+  const { currentUser, theme, toggleTheme, setActiveView, activeView, logout, setCurrentApplication, appPermissions, openChangePasswordModal, allApps } = context;
 
   const accessibleApps = useMemo(() => {
-    if (!currentUser || !appPermissions) return [];
-    return Object.keys(SWITCHABLE_APPS).filter(appId => appPermissions[appId]?.includes(currentUser.id));
-  }, [currentUser, appPermissions]);
+    if (!currentUser || !appPermissions || !allApps) return [];
+    return Object.keys(allApps).filter(appId => appPermissions[appId]?.includes(currentUser.id));
+  }, [currentUser, appPermissions, allApps]);
 
   return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-md z-50 relative" },
     React.createElement('div', { className: "container mx-auto px-4 sm:px-6 lg:px-1" },
@@ -2093,7 +2203,7 @@ const Header = () => {
                         React.createElement('div', { className: "py-1" },
                             React.createElement('button', { onClick: () => { setActiveView('dashboard'); setCurrentApplication('e-ticket'); setSwitchAppOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(TicketIcon, { className: "h-5 w-5 mr-3" }), 'E-Ticket Dashboard'),
                             accessibleApps.map(appId => {
-                                const app = SWITCHABLE_APPS[appId];
+                                const app = allApps[appId];
                                 return React.createElement('button', { key: appId, onClick: () => { setCurrentApplication(appId); setSwitchAppOpen(false); }, className: "w-full text-left flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" }, React.createElement(app.icon, { className: "h-5 w-5 mr-3" }), app.name)
                             })
                         )
@@ -2101,7 +2211,7 @@ const Header = () => {
                 ),
             )
           ) : (
-             React.createElement('button', { onClick: openLoginModal, className: "inline-flex items-center justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary-700" }, "Login")
+             null
           ),
           React.createElement('button', { onClick: toggleTheme, className: "p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700", title: "Toggle Theme" },
             theme === 'light' ? React.createElement(MoonIcon, { className: "h-6 w-6" }) : React.createElement(SunIcon, { className: "h-6 w-6" })
@@ -2138,12 +2248,12 @@ const MainApp = () => {
     const { 
         currentUser, activeView, currentApplication, 
         isChangePasswordModalOpen, setChangePasswordModalOpen, changePassword,
-        isFirstAdminLogin
+        isFirstAdminLogin, setFirstAdminLogin, allApps
     } = useContext(AppContext);
 
     const renderView = () => {
         if (currentApplication !== 'e-ticket') {
-             const appUrl = SWITCHABLE_APPS[currentApplication]?.url || '';
+             const appUrl = allApps[currentApplication]?.url || '';
              return React.createElement('iframe', {
                     src: appUrl,
                     className: "w-full h-[calc(100vh-5rem)] border-0",
@@ -2173,7 +2283,10 @@ const MainApp = () => {
             }),
             React.createElement(ChangePasswordModal, {
                 isOpen: isFirstAdminLogin,
-                onPasswordChange: (newPass) => changePassword(currentUser.id, newPass)
+                onPasswordChange: (newPass) => {
+                    changePassword(currentUser.id, newPass);
+                    setFirstAdminLogin(false);
+                }
             })
         )
     );
@@ -2183,7 +2296,7 @@ const AppContent = () => {
     const { isLoading, currentUser, handleLogin } = useContext(AppContext);
 
     if (isLoading) {
-        return React.createElement('div', { className: "flex items-center justify-center min-h-screen bg-White-900 font-serif bold text-Black " },
+        return React.createElement('div', { className: "flex items-center justify-center min-h-screen bg-white dark:bg-gray-900 font-serif bold text-black dark:text-white" },
                 React.createElement('div', { className: "flex flex-col items-center space-y-4" },
                      React.createElement('img', { 
                         src: "https://raw.githubusercontent.com/kasamfashions/kasamconnekt/325621f44996603e344dac9f01916e6c0b318eaf/Kasam%20Connekt.png", 
