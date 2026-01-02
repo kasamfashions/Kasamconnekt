@@ -2158,7 +2158,7 @@ const Header = () => {
   }, [currentUser, appPermissions, allApps]);
 
   return React.createElement('header', { className: "bg-white dark:bg-gray-800 shadow-md z-50 relative" },
-    React.createElement('div', { className: "container mx-auto px-4 sm:px-6 lg:px-1" },
+    React.createElement('div', { className: "w-full px-4 sm:px-6 lg:px-8" },
       React.createElement('div', { className: "flex items-center justify-between py-4" },
         React.createElement('div', { className: "flex items-center space-x-4 min-w-0" },
           currentUser && currentUser.role === Role.ADMIN && (
@@ -2327,3 +2327,4 @@ if (rootElement) {
     </script>
   </body>
 </html>
+
